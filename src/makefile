@@ -7,22 +7,22 @@ LDIR =../lib
 
 LIBS=-lm
 
-_DEPS = server.h
+_DEPS = proxy.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = HtppInspector.o server.o
+_OBJ = httpInspector.o proxy.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 
 $(ODIR)/%.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-all: clean HtppInspector
+all: clean httpInspector
 
-HtppInspector: $(OBJ)
+httpInspector: $(OBJ)
 	gcc -std=c99  -o $@ $^ $(CFLAGS) $(LIBS)
 
 .PHONY: clean
 
 clean:
-	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~ tradutor
+	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~ httpInspector
