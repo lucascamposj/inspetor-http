@@ -163,38 +163,19 @@ void GetHostFromHeader(char *headerBuffer, int bufferSize, char *result, int res
   GetFromText("Host:", 1, '\r', headerBuffer, bufferSize, result, resultSize);
 }
 
-char * GetWgetFileName(char *link)
+void GetWgetFileName(char *link, char *response, int responseSize)
 {
-  int linkSize = strlen(link);
-  int i, j=0, valueSize;
-  char *value, *realName;
+  int i, j = 0, slashIndex = 0, linkSize = strlen(link);
 
-  value = (char *) malloc(sizeof(char)*500);
-  realName = (char *) malloc(sizeof(char)*500);
-
-  for (i = linkSize; i >= 0; i--)
+  for (i = 0; i < linkSize; i++)
   {
-    if(link[i] == '/')
-    {
-      value[j] = '\0';
-      break;
-    }
-
-    value[j] = link[i];
-    j++;
+    if (link[i] == '/')
+      slashIndex = i;
   }
 
-  valueSize = strlen(value);
-  j = 0;
-
-  for (i = valueSize; j >= 0; i--)
+  for (i = (slashIndex + 1); i < linkSize && j < responseSize; i++)
   {
-    realName[j] = value[i];
+    response[j] = link[i];
     j++;
   }
-
-  realName[j] = '\0';
-  free(value);
-
-  return realName;
 }

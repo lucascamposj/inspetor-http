@@ -28,5 +28,5 @@ FILE * CreateDataFile(char *, char *);
 void GetFromText(char *, int, char, char *, int, char *, int);
 void SaveToFile(char *,int, char *, char *);
 void GetLinkFromHeader(char *, int, char *, int);
-char * GetWgetFileName(char *);
+void GetWgetFileName(char *, char *, int);
 void GetHostFromHeader(char *, int, char *, int);
