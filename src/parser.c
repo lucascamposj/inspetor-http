@@ -76,6 +76,8 @@ parseData parseHtml (char *htmlBuffer, int bufferSize)
     data.dataFileName[1] = '1';
     data.dataFileName[2] = '\0';
   }
+
+  return data;
 }
 
 FILE * CreateDataFile(char *name)
@@ -102,6 +104,7 @@ FILE * CreateDataFile(char *name)
 // buffer - onde procurar o parameter, bufferSize o tamanho real em memoria do buffer (1000 bytes por exemplo)
 // stopSign - Até onde será procurado o dado (ex: test: dado\r\n, nesse caso o stopSign é '\r')
 // OBS: Para pegar um dado do header, displacement sempre será 2.
+// OBS: Deve ser feito free() com o retorno do parametro dessa função, após termino de uso.
 char * GetFromText(char *parameter, int displacement, char stopSign, char *buffer, int bufferSize)
 {
   char *value, *ptr, *i;
