@@ -60,7 +60,7 @@ parseData parseHtml (char *htmlBuffer, int bufferSize)
     // Copia o nome do arquivo para a struct
     strcpy(data.dataFileName,name);
     // Cria o arquivo '.html'
-    dataFile = CreateDataFile(name);
+    dataFile = CreateDataFile(name, ".html", "w");
 
     // Popula o arquivo '.html' com os dados (se existir algum)
     for (;i < bufferSize; i++)
@@ -80,17 +80,17 @@ parseData parseHtml (char *htmlBuffer, int bufferSize)
   return data;
 }
 
-FILE * CreateDataFile(char *name)
+FILE * CreateDataFile(char *name, char *extention, char *mode)
 {
   FILE *dataFile;
   char dataFileName[100];
 
   // Adicionando o '.asm' no nome do arquivo
   strcpy(dataFileName,name);
-  strcat(dataFileName,".html");
+  strcat(dataFileName,extention);
 
   // Criação do arquivo '.html'
-  dataFile = fopen(dataFileName,"w");
+  dataFile = fopen(dataFileName,mode);
 
   if(dataFile == NULL)
   {
@@ -133,4 +133,31 @@ char * GetFromText(char *parameter, int displacement, char stopSign, char *buffe
   }
 
   return NULL;
+}
+
+void SaveToFile(char *string, int stringSize, char *fileName)
+{
+  int i;
+  FILE *dataFile = CreateDataFile(fileName, ".txt", "w");
+
+  for (i = 0; i < stringSize; i++)
+  {
+    fprintf(dataFile, "%c", string[i]);
+  }
+
+  fclose(dataFile);
+}
+
+char * GetLinkFromHeader(char *headerBuffer, int bufferSize)
+{
+  char *finalString;
+
+  finalString = GetFromText("GET", 1, 0x20, headerBuffer, bufferSize);
+
+  if (finalString == NULL)
+  {
+    finalString = GetFromText("POST", 1, 0x20, headerBuffer, bufferSize);
+  }
+
+  return finalString;
 }
