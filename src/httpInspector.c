@@ -19,6 +19,7 @@ Lucas Campos Jorge - mat. 15/0154135
     #include <netinet/in.h>
 		#include <arpa/inet.h>
     #include <unistd.h>
+		#include<netdb.h>
 #endif
 
 #ifndef _Proxy_library
@@ -44,43 +45,15 @@ int main(int argc, char *argv[])
   char buffer[1000];
 	char request[1000], reply[5000];
 	int connection_status;
+	char ip[100], hostname[500];
 
   // Adicionar a leitura do argumento passado pelo terminal
   if(argc == 2)
-  {
     proxy_port = atoi(argv[1]);
-  }
   else
-  {
     proxy_port = 8228;
-  }
 
-  //
-  // /***************** CLIENT **********************/
-  // // cria o socket
-  // socket = create_socket();
-  //
-  // // endereço do servidor
-  // server_adress = config_address(port);
-  //
-  // connection_status = proxy_connect(socket, &server_adress);
-  //
-  // if(connection_status == -1)
-  // {
-  //   printf("Erro na conexão.\n", );
-  // }
-  //
-  // // recebe dado do servidor
-  // char message[256];
-  // proxy_receive(socket, message);
-  //
-  // // imprime resposta
-  // printf("Resposta: $s\n", message);
-  // // fecha o proxy_socket
-  // close(socket);
-
-  /*************************SERVIDOR********************/
-
+	// socket da parte servidor
   socket = create_socket();
   config_address(proxy_port,&address);
 
@@ -94,7 +67,6 @@ int main(int argc, char *argv[])
   while(1)
   {
     newsocket = proxy_accept(socket);
-    newsocket = accept(socket,(struct sockaddr *) &cli_addr, &clilen);
 
     if (newsocket < 0)
       printf("Erro ao aceitar");
@@ -113,7 +85,15 @@ int main(int argc, char *argv[])
 
 			/************* INTERNET *************/
 			int internet_socket = create_socket();
-			config_address(80, &internet_address);
+
+			GetHostFromHeader(request, 1000, hostname, 500);
+			get_ip(hostname, ip);
+
+			printf("HostName: %s IP: %s\n", hostname, ip);
+
+			internet_address.sin_family = AF_INET;
+			internet_address.sin_port = htons(80);
+			inet_aton(ip, (struct in_addr *) &internet_address.sin_addr.s_addr);
 
 			connection_status = proxy_connect(socket, &internet_address);
 

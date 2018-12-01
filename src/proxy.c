@@ -19,6 +19,8 @@ Lucas Campos Jorge - mat. 15/0154135
     #include <netinet/in.h>
     #include <unistd.h>
 		#include <netdb.h>
+		#include<arpa/inet.h>
+
 #endif
 
 int create_socket()
@@ -32,6 +34,28 @@ void config_address(int port, struct sockaddr_in * address)
   address->sin_family = AF_INET;
   address->sin_port = htons(port);
   address->sin_addr.s_addr = INADDR_ANY;
+}
+
+int get_ip(char hostname[], char *ip){
+	struct hostent *he;
+	struct in_addr **addr_list;
+	int i;
+
+	if ( (he = gethostbyname( hostname ) ) == NULL)
+	{
+		return -1;
+	}
+
+	//Cast the h_addr_list to in_addr , since h_addr_list also has the ip address in long format only
+	addr_list = (struct in_addr **) he->h_addr_list;
+
+	for(i = 0; addr_list[i] != NULL; i++)
+	{
+		//Return the first one;
+		strcpy(ip , inet_ntoa(*addr_list[i]) );
+	}
+
+	return 0;
 }
 
 int proxy_connect(int socket,struct sockaddr_in * address){
