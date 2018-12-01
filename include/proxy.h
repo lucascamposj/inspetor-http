@@ -11,3 +11,4 @@ int proxy_receive(int, char *); // recebe dado do servidor
 int proxy_bind(int, struct sockaddr_in *);
 int proxy_accept(int socket);
 int proxy_send(int ,char *);
+int get_ip(char *, char *);
