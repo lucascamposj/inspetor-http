@@ -101,7 +101,8 @@ FILE * CreateDataFile(char *name)
 // parameter - O que buscar, displacement - quando começar a pegar o dado (ex: test: dado\r\n, tem displacement de 2 pq tem ':' e espaço até começar o dado)
 // buffer - onde procurar o parameter, bufferSize o tamanho real em memoria do buffer (1000 bytes por exemplo)
 // stopSign - Até onde será procurado o dado (ex: test: dado\r\n, nesse caso o stopSign é '\r')
-char * GetFromHeader(char *parameter, int displacement, char stopSign, char *buffer, int bufferSize)
+// OBS: Para pegar um dado do header, displacement sempre será 2.
+char * GetFromText(char *parameter, int displacement, char stopSign, char *buffer, int bufferSize)
 {
   char *value, *ptr, *i;
   int paramSize = strlen(parameter) + displacement;
