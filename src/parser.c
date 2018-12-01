@@ -60,7 +60,7 @@ parseData parseHtml (char *htmlBuffer, int bufferSize)
     // Copia o nome do arquivo para a struct
     strcpy(data.dataFileName,name);
     // Cria o arquivo '.html'
-    dataFile = CreateDataFile(name, ".html", "w");
+    dataFile = CreateDataFile(name, ".html");
 
     // Popula o arquivo '.html' com os dados (se existir algum)
     for (;i < bufferSize; i++)
@@ -80,7 +80,7 @@ parseData parseHtml (char *htmlBuffer, int bufferSize)
   return data;
 }
 
-FILE * CreateDataFile(char *name, char *extention, char *mode)
+FILE * CreateDataFile(char *name, char *extention)
 {
   FILE *dataFile;
   char dataFileName[100];
@@ -90,13 +90,14 @@ FILE * CreateDataFile(char *name, char *extention, char *mode)
   strcat(dataFileName,extention);
 
   // Criação do arquivo '.html'
-  dataFile = fopen(dataFileName,mode);
+  dataFile = fopen(dataFileName,"w");
 
   if(dataFile == NULL)
   {
     printf("ERRO: Arquivo não criado\n");
     exit(1);
   }
+
   return dataFile;
 }
 
@@ -135,10 +136,13 @@ char * GetFromText(char *parameter, int displacement, char stopSign, char *buffe
   return NULL;
 }
 
-void SaveToFile(char *string, int stringSize, char *fileName)
+void SaveToFile(char *string, int stringSize, char *fileName, char *format)
 {
   int i;
-  FILE *dataFile = CreateDataFile(fileName, ".txt", "w");
+
+  FILE *dataFile;
+
+  dataFile = CreateDataFile(fileName, format);
 
   for (i = 0; i < stringSize; i++)
   {
@@ -148,8 +152,9 @@ void SaveToFile(char *string, int stringSize, char *fileName)
   fclose(dataFile);
 }
 
-char * GetLinkFromHeader(char *headerBuffer, int bufferSize)
+void GetLinkFromHeader(char *headerBuffer, int bufferSize, char *result, int resultSize)
 {
+  int i;
   char *finalString;
 
   finalString = GetFromText("GET", 1, 0x20, headerBuffer, bufferSize);
@@ -159,5 +164,46 @@ char * GetLinkFromHeader(char *headerBuffer, int bufferSize)
     finalString = GetFromText("POST", 1, 0x20, headerBuffer, bufferSize);
   }
 
-  return finalString;
+  for (i = 0; i < resultSize && i < 500; i++)
+  {
+    result[i] = finalString[i];
+  }
+
+  free(finalString);
+}
+
+char * GetWgetFileName(char *link)
+{
+  int linkSize = strlen(link);
+  int i, j=0, valueSize;
+  char *value, *realName;
+
+  value = (char *) malloc(sizeof(char)*500);
+  realName = (char *) malloc(sizeof(char)*500);
+
+  for (i = linkSize; i >= 0; i--)
+  {
+    if(link[i] == '/')
+    {
+      value[j] = '\0';
+      break;
+    }
+
+    value[j] = link[i];
+    j++;
+  }
+
+  valueSize = strlen(value);
+  j = 0;
+
+  for (i = valueSize; j >= 0; i--)
+  {
+    realName[j] = value[i];
+    j++;
+  }
+
+  realName[j] = '\0';
+  free(value);
+
+  return realName;
 }

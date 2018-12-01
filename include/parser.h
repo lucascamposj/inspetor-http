@@ -24,7 +24,8 @@ typedef struct AsmList
 } asmList;*/
 
 parseData parseHtml (char *, int);
-FILE * CreateDataFile(char *, char *, char *);
+FILE * CreateDataFile(char *, char *);
 char * GetFromText(char *, int, char, char *, int);
-void SaveToFile(char *,int, char *);
-char * GetLinkFromHeader(char *, int);
+void SaveToFile(char *,int, char *, char *);
+void GetLinkFromHeader(char *, int, char *, int);
+char * GetWgetFileName(char *);
