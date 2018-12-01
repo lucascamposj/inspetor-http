@@ -13,4 +13,4 @@ typedef struct ParseData
 
 parseData parseHtml (char *, int);
 FILE * CreateDataFile(char *);
-char * GetFromHeader(char *, char *);
+char * GetFromHeader(char *, int, char, char *, int);

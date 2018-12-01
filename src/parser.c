@@ -12,12 +12,31 @@ Lucas Campos Jorge - mat. 15/0154135
     #include <ctype.h>
 #endif
 
+#ifndef _Socket_libraries
+  #define _Socket_libraries
+    #include <sys/types.h>
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+		#include <arpa/inet.h>
+    #include <unistd.h>
+#endif
+
+#ifndef _Proxy_library
+  #define _Proxy_library
+    #include "proxy.h"
+#endif
+
+#ifndef _Parser_library
+  #define _Parser_library
+    #include "parser.h"
+#endif
+
 parseData parseHtml (char *htmlBuffer, int bufferSize)
 {
   parseData data;
   FILE *dataFile;
   char name[100];
-  int i = 0, wasCrNl = 0; QntCrNl = 0;
+  int i = 0, wasCrNl = 0, QntCrNl = 0;
 
   for (i = 0; i < bufferSize-3; i++)
   {
@@ -53,8 +72,9 @@ parseData parseHtml (char *htmlBuffer, int bufferSize)
   }
   else
   {
-    data.dataFileName[0] = '-1';
-    data.dataFileName[1] = '\0';
+    data.dataFileName[0] = '-';
+    data.dataFileName[1] = '1';
+    data.dataFileName[2] = '\0';
   }
 }
 
@@ -78,11 +98,14 @@ FILE * CreateDataFile(char *name)
   return dataFile;
 }
 
-char * GetFromHeader(char *parameter, char *buffer)
+// parameter - O que buscar, displacement - quando começar a pegar o dado (ex: test: dado\r\n, tem displacement de 2 pq tem ':' e espaço até começar o dado)
+// buffer - onde procurar o parameter, bufferSize o tamanho real em memoria do buffer (1000 bytes por exemplo)
+// stopSign - Até onde será procurado o dado (ex: test: dado\r\n, nesse caso o stopSign é '\r')
+char * GetFromHeader(char *parameter, int displacement, char stopSign, char *buffer, int bufferSize)
 {
-  char *value, *ptr;
-  int paramSize = strlen(parameter) + 2;
-  int i, j=0;
+  char *value, *ptr, *i;
+  int paramSize = strlen(parameter) + displacement;
+  int j=0;
 
   ptr = strstr(buffer, parameter);
 
@@ -90,20 +113,20 @@ char * GetFromHeader(char *parameter, char *buffer)
   {
     value = (char *) malloc(sizeof(char)*500);
 
-    for(i = (ptr + paramSize); i < buffer; i++)
+    for(i = (ptr + paramSize); i < (buffer + bufferSize); i++)
     {
-      if (buffer[i] == '\r')
+      if (*i == stopSign)
       {
         value[j] = '\0';
         break;
       }
 
-      value[j] = buffer[i];
+      value[j] = *i;
       j++;
     }
 
     return value;
   }
-  
+
   return NULL;
 }

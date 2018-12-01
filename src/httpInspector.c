@@ -26,6 +26,11 @@ Lucas Campos Jorge - mat. 15/0154135
     #include "proxy.h"
 #endif
 
+#ifndef _Parser_library
+  #define _Parser_library
+    #include "parser.h"
+#endif
+
 #define REQUEST_SIZE 1000
 #define REPLY_SIZE 5000
 
@@ -49,6 +54,7 @@ int main(int argc, char *argv[])
   {
     proxy_port = 8228;
   }
+
   //
   // /***************** CLIENT **********************/
   // // cria o socket

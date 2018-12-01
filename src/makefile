@@ -7,10 +7,10 @@ LDIR =../lib
 
 LIBS=-lm
 
-_DEPS = proxy.h
+_DEPS = proxy.h parser.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = httpInspector.o proxy.o
+_OBJ = httpInspector.o proxy.o parser.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 
