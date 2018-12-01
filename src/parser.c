@@ -105,35 +105,31 @@ FILE * CreateDataFile(char *name, char *extention)
 // buffer - onde procurar o parameter, bufferSize o tamanho real em memoria do buffer (1000 bytes por exemplo)
 // stopSign - Até onde será procurado o dado (ex: test: dado\r\n, nesse caso o stopSign é '\r')
 // OBS: Para pegar um dado do header, displacement sempre será 2.
-// OBS: Deve ser feito free() com o retorno do parametro dessa função, após termino de uso.
-char * GetFromText(char *parameter, int displacement, char stopSign, char *buffer, int bufferSize)
+// result - array onde será salvo o dado
+// resultSize - tamanho do array result.
+void GetFromText(char *parameter, int displacement, char stopSign, char *buffer, int bufferSize, char *result, int resultSize)
 {
-  char *value, *ptr, *i;
+  char *ptr, *i;
   int paramSize = strlen(parameter) + displacement;
   int j=0;
 
+  bzero(result, resultSize);
   ptr = strstr(buffer, parameter);
 
   if (ptr != NULL)
   {
-    value = (char *) malloc(sizeof(char)*500);
-
-    for(i = (ptr + paramSize); i < (buffer + bufferSize); i++)
+    for(i = (ptr + paramSize); i < (buffer + bufferSize) && j < resultSize; i++)
     {
       if (*i == stopSign)
       {
-        value[j] = '\0';
+        result[j] = '\0';
         break;
       }
 
-      value[j] = *i;
+      result[j] = *i;
       j++;
     }
-
-    return value;
   }
-
-  return NULL;
 }
 
 void SaveToFile(char *string, int stringSize, char *fileName, char *format)
@@ -154,22 +150,12 @@ void SaveToFile(char *string, int stringSize, char *fileName, char *format)
 
 void GetLinkFromHeader(char *headerBuffer, int bufferSize, char *result, int resultSize)
 {
-  int i;
-  char *finalString;
+  GetFromText("GET", 1, 0x20, headerBuffer, bufferSize, result, resultSize);
 
-  finalString = GetFromText("GET", 1, 0x20, headerBuffer, bufferSize);
-
-  if (finalString == NULL)
+  if (result[0] == '\0')
   {
-    finalString = GetFromText("POST", 1, 0x20, headerBuffer, bufferSize);
+    GetFromText("POST", 1, 0x20, headerBuffer, bufferSize, result, resultSize);
   }
-
-  for (i = 0; i < resultSize && i < 500; i++)
-  {
-    result[i] = finalString[i];
-  }
-
-  free(finalString);
 }
 
 char * GetWgetFileName(char *link)
