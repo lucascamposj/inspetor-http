@@ -158,6 +158,11 @@ void GetLinkFromHeader(char *headerBuffer, int bufferSize, char *result, int res
   }
 }
 
+void GetHostFromHeader(char *headerBuffer, int bufferSize, char *result, int resultSize)
+{
+  GetFromText("Host:", 1, 0x20, headerBuffer, bufferSize, result, resultSize);
+}
+
 char * GetWgetFileName(char *link)
 {
   int linkSize = strlen(link);

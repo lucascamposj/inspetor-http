@@ -29,3 +29,4 @@ void GetFromText(char *, int, char, char *, int, char *, int);
 void SaveToFile(char *,int, char *, char *);
 void GetLinkFromHeader(char *, int, char *, int);
 char * GetWgetFileName(char *);
+void GetHostFromHeader(char *, int, char *, int);
