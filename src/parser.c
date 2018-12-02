@@ -179,3 +179,50 @@ void GetHttpFileName(char *link, char *response, int responseSize)
     j++;
   }
 }
+
+void GetHttpFolderPath(char *link, char *response, int responseSize)
+{
+  int i, j = 0, linkSize = strlen(link);
+  char mainFather[300], httpFileName[300];
+  int mainFatherStringSize, httpFileNameSize, folderPathLimit;
+
+  GetHttpMainFather(link, mainFather, 300);
+  GetHttpFileName(link, httpFileName, 300);
+
+  mainFatherStringSize = strlen(mainFather);
+  httpFileNameSize = strlen(httpFileName);
+  folderPathLimit = linkSize - httpFileNameSize;
+
+  for (i = mainFatherStringSize; i < folderPathLimit && j < responseSize; i++, j++)
+  {
+    response[j] = link[i];
+  }
+
+  response[j] = '\0';
+}
+
+void GetHttpMainFather(char *link, char *response, int responseSize)
+{
+  int i, slashIndex = 0, slashCounter = 0, linkSize = strlen(link);
+
+  for (i = 0; i < linkSize; i++)
+  {
+    if (link[i] == '/')
+    {
+      slashCounter += 1;
+    }
+
+    if (slashCounter == 3)
+    {
+      slashIndex = i;
+      break;
+    }
+  }
+
+  for (i = 0; i < slashIndex && i < responseSize; i++)
+  {
+    response[i] = link[i];
+  }
+
+  response[responseSize] = '\0';
+}

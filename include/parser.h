@@ -18,3 +18,5 @@ void SaveToFile(char *,int, char *, char *);
 void GetLinkFromHeader(char *, int, char *, int);
 void GetHttpFileName(char *, char *, int);
 void GetHostFromHeader(char *, int, char *, int);
+void GetHttpMainFather(char *, char *, int);
+void GetHttpFolderPath(char *, char *, int );
