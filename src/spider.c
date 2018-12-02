@@ -36,64 +36,12 @@ Lucas Campos Jorge - mat. 15/0154135
     #include "spider.h"
 #endif
 
-void AddLink(listOfLinks **listOfLinksHead, listOfList **listOfListHead, char *link)
+void Spider(int isDump, spiderList **spiderListHead, int deepNess)
 {
-	listOfLinks *contentCreator, *lastElem;
 
-	// Criação da lista de links
-	contentCreator = (listOfLinks *)malloc(sizeof(listOfLinks));
-
-	if (*listOfLinksHead == NULL)
-	{
-		*listOfLinksHead = contentCreator;
-		(*listOfLinksHead)->nextLink = NULL;
-		(*listOfLinksHead)->previousLink = NULL;
-    AddListOfList(listOfListHead, *listOfLinksHead);
-	}
-	else
-	{
-		lastElem = *listOfLinksHead;
-
-		while (lastElem->nextLink != NULL)
-			lastElem = lastElem->nextLink;
-
-		contentCreator->previousLink = lastElem;
-		lastElem->nextLink = contentCreator;
-		contentCreator->nextLink = NULL;
-	}
-
-	strcpy(contentCreator->Link, link);
 }
 
-void AddListOfList(listOfList **listOfListHead, listOfLinks *listOfLinksHead)
-{
-	listOfList *contentCreator, *lastElem;
-
-	// Criação da lista de listas
-	contentCreator = (listOfList *)malloc(sizeof(listOfList));
-
-	if (*listOfListHead == NULL)
-	{
-		*listOfListHead = contentCreator;
-		(*listOfListHead)->nextList = NULL;
-		(*listOfListHead)->previousList = NULL;
-	}
-	else
-	{
-		lastElem = *listOfListHead;
-
-		while (lastElem->nextList != NULL)
-			lastElem = lastElem->nextList;
-
-		contentCreator->previousList = lastElem;
-		lastElem->nextList = contentCreator;
-		contentCreator->nextList = NULL;
-	}
-
-	contentCreator->listHead =  listOfLinksHead;
-}
-
-void AddSpiderList(spiderList **spiderListHead, char *link, int offSet)
+void AddSpiderList(spiderList **spiderListHead, spiderList *fatherLink, char *link)
 {
 	spiderList *contentCreator, *lastElem;
 
@@ -119,7 +67,7 @@ void AddSpiderList(spiderList **spiderListHead, char *link, int offSet)
 	}
 
 	strcpy(contentCreator->Link, link);
-  contentCreator->offSet = offSet;
+  contentCreator->fatherLink = fatherLink;
 }
 
 void DeleteSpiderList(spiderList **spiderListHead)
@@ -134,14 +82,15 @@ void DeleteSpiderList(spiderList **spiderListHead)
 	}
 }
 
-void DeleteLink(listOfLinks **listOfLinksHead)
+int SpiderListContains(spiderList *spiderListHead, char *link)
 {
-	spiderList *aux;
+  while (spiderListHead != NULL)
+  {
+    if (strcmp(link, spiderListHead->Link) == 0)
+      return 1;
 
-	while (*spiderListHead != NULL)
-	{
-		aux = *spiderListHead;
-		*spiderListHead = (*spiderListHead)->nextLink;
-		free(aux);
-	}
+    spiderListHead = spiderListHead->nextLink;
+  }
+
+  return 0;
 }

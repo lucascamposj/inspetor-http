@@ -4,24 +4,13 @@ Andre Garrido Damaceno.- mat. 15/0117531
 Lucas Campos Jorge - mat. 15/0154135
 */
 
-typedef struct ListOfLinks
-{
-  char Link[500];                   // Link
-  struct ListOfLinks *nextLink, *previousLink;
-} listOfLinks;
-
-typedef struct ListOfList
-{
-  struct ListOfLinks *listHead;     // Inicio da lista de links
-  struct ListOfList *nextList, *previousList;
-} listOfList;
-
 typedef struct SpiderList
 {
   char Link[500];
-  int offSet;                     // Quantos tabs serão impressos
-  struct SpiderList *nextLink, *previousLink;
+  struct SpiderList *nextLink, *previousLink, *fatherLink;
 } spiderList;
 
-void AddLink(listOfLinks **, listOfList **, char *);
-void AddListOfList(listOfList **, listOfLinks *);
+void AddSpiderList(spiderList **, spiderList *, char *);
+void DeleteSpiderList(spiderList **);
+int SpiderListContains(spiderList *, char *); // Verifica se a lista spider já contém o link. Retorna 1 se tiver, 0 se não.
+void Spider(int, spiderList **, int);
