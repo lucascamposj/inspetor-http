@@ -27,3 +27,4 @@ void DumpTemp(char *);
 void RemoveAllFiles();
 void RemoveTmp();
 void CreateTmp();
+void ClearString(char *, int);

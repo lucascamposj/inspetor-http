@@ -20,6 +20,6 @@ void AddSpiderList(spiderList **, spiderList *, char *);
 void AddVisitedList(visitedList **, char *);
 void DeleteSpiderList(spiderList **);
 int VisitedListContains(visitedList *, char *); // Verifica se a lista visited já contém o link. Retorna 1 se tiver, 0 se não.
-void Spider(char *, int, spiderList **, int);
+void Spider(char *, char *, int, spiderList **);
 void AddVisitedList(visitedList **, char *);
 void DeleteVisitedList(visitedList **);

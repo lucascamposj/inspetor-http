@@ -279,7 +279,7 @@ void GetHttpMainFather(char *link, char *response, int responseSize)
 void DumpFile(char *link)
 {
   char *dump;
-  int directoryStringSize, fileNameStringSize, linkSize = strlen(link);
+  int directoryStringSize, fileNameStringSize, linkSize = strlen(link), nullName = 0;
   char directoryName[linkSize], fileName[linkSize];
 
   GetHttpFolderPath(link, directoryName, linkSize);
@@ -287,7 +287,10 @@ void DumpFile(char *link)
   directoryStringSize = strlen(directoryName);
   fileNameStringSize = strlen(fileName);
 
-  dump = (char *)malloc(sizeof(char)*(directoryStringSize + fileNameStringSize + 16)); // 6 - 'Dump/' + '\0'
+  if (fileNameStringSize == 0)
+    nullName = 10;
+
+  dump = (char *)malloc(sizeof(char)*(directoryStringSize + fileNameStringSize + nullName + 16)); // 6 - 'Dump/' + '\0' + nullName se nome vier vazio. (index.html)
 
   strcpy(dump, "mkdir -p ./Dump");
   strcat(dump, directoryName);
@@ -300,8 +303,24 @@ void DumpFile(char *link)
   bzero(dump, (directoryStringSize + fileNameStringSize + 16));
   strcpy(dump, "./Dump");
   strcat(dump, directoryName);
-  RemoveChar('/', dump, (directoryStringSize + fileNameStringSize + 16), 1); // Remove a barra no final para garantir que sempre vai existir ela.
+  RemoveChar('/', dump, (directoryStringSize + fileNameStringSize + nullName + 16), 1); // Remove a barra no final para garantir que sempre vai existir ela.
   strcat(dump, "/");
+
+  if (fileName[0] == '\0')
+  {
+    fileName[0] = 'i';
+    fileName[1] = 'n';
+    fileName[2] = 'd';
+    fileName[3] = 'e';
+    fileName[4] = 'x';
+    fileName[5] = '.';
+    fileName[6] = 'h';
+    fileName[7] = 't';
+    fileName[8] = 'm';
+    fileName[9] = 'l';
+    fileName[10] = '\0';
+  }
+
   strcat(dump, fileName);
 
   // Cria o arquivo final no diretório correto e popula ele com 'tmp/server_result.txt' - resposta do server
@@ -349,4 +368,11 @@ void RemoveTmp()
 void CreateTmp()
 {
   system("mkdir ./tmp");
+}
+
+// Limpa a string por completo, colocando '\0'
+void ClearString(char *string, int size)
+{
+	for (int i = 0; i<size; i++)
+		string[i] = '\0';
 }

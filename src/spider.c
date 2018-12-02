@@ -37,43 +37,130 @@ Lucas Campos Jorge - mat. 15/0154135
     #include "spider.h"
 #endif
 
-void Spider(char *link, int isDump, spiderList **spiderListHead, int deepNess)
+void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
 {
-  char newLink[500];
+  char newLink[500], tmpLink[500], txtLine[500], *ptr, fatherLink[500], *j;
+  int i = 0, w, k, txtItem, fatherLinkSize;
   spiderList *linkToVisit;
   visitedList *visitedListHead;
+  FILE *tmpFile;
 
-  visitedListHead = NULL;
   AddSpiderList(spiderListHead, NULL, link);
-
+  visitedListHead = NULL;
   linkToVisit = *spiderListHead;
+  GetHttpMainFather(link, fatherLink, 500);
+  fatherLinkSize = strlen(fatherLink);
   strcpy(newLink, link);
 
   while (linkToVisit != NULL)
   {
-  //  if (VisitedListContains(visitedListHead, newLink) == 0)
+    if (VisitedListContains(visitedListHead, newLink) == 0)
     {
-  //    AddVisitedList(&visitedListHead, newLink);  // Adiciona link nos visitados
+      AddVisitedList(&visitedListHead, newLink);  // Adiciona link nos visitados
 
-      // GetHttpContent(newLink) (pede um novo arquivo do 'tmp' com o newLink)
+      RemoveTmp();
+      CreateTmp();
+      printf("\nBaixando: %s\n", newLink);
+      get_server_response(hostname, newLink); // (pede um novo arquivo do 'tmp' com o newLink)
+      printf("Baixado\n");
+
+      // RemoveTmpHeader();
 
       if (isDump == 1)
       {
         DumpFile(newLink);
       }
 
-      while (newLink[0] != '\0')
+      tmpFile = OpenDataFile("./tmp/server_response.txt");
+
+      bzero(txtLine, 500);
+      bzero(tmpLink, 500);
+
+      while ((txtItem = (char) fgetc(tmpFile)) != EOF)
       {
-        AddSpiderList(spiderListHead, linkToVisit, newLink);
-        // AnaliseHttp(newLink);
+        txtLine[i] = txtItem;
+        i++;
+
+        if (txtItem == '\n')
+        {
+          i = 0;
+          ptr = strstr(txtLine, "href=\"");
+
+          if(ptr == NULL)
+          {
+            ptr = strstr(txtLine, "src=\"");
+
+            if(ptr != NULL)
+            {
+              j = ptr + 5;
+            }
+          }
+          else
+          {
+            j = ptr + 6;
+          }
+
+          if (ptr != NULL)
+          {
+            w = 0;
+            while (*j != '"' && *j != '?' && w < 500 && j < &txtLine[500])
+            {
+              if(*j != 0x20 && *j != '\r' && *j != 0x09)
+              {
+                tmpLink[w] = *j;
+              }
+
+              j++;
+              w++;
+            }
+
+            RemoveChar('/', tmpLink, 500, 1); // Remove a '/' do final da string, se tiver.
+
+            if (tmpLink[0] == '/')
+            {
+              for (k = 0; k < fatherLinkSize; k++)
+                newLink[k] = fatherLink[k];
+
+              for (k = 0; k < 500; k++)
+              {
+                newLink[k + fatherLinkSize] = tmpLink[k];
+
+                if (tmpLink[k] == '\0')
+                  break;
+              }
+
+              for (int k = 0; k < 500; k++)
+              {
+                tmpLink[k] = newLink[k];
+
+                if (tmpLink[k] == '\0')
+                  break;
+              }
+            }
+
+            GetHttpMainFather(tmpLink, newLink, 500);
+
+            if (strcmp(fatherLink, newLink) == 0)
+            {
+              AddSpiderList(spiderListHead, linkToVisit, tmpLink);
+            }
+
+          }
+
+          bzero(txtLine, 500);
+          bzero(tmpLink, 500);
+        }
       }
     }
 
     linkToVisit = linkToVisit->nextLink;
-    strcpy(newLink, linkToVisit->Link);
+
+    // Se ainda não estiver acabado a lista (para não dar problemas...)
+    if (linkToVisit != NULL)
+      strcpy(newLink, linkToVisit->Link);
   }
 
-//  DeleteVisitedList(&visitedListHead);
+  DeleteVisitedList(&visitedListHead);
 }
 
 void AddSpiderList(spiderList **spiderListHead, spiderList *fatherLink, char *link)

@@ -105,7 +105,7 @@ void get_server_response(char *hostname, char *url)
 	char buffer[5000];
 	FILE* file;
 
-	file = fopen("temp.html","w");
+	file = fopen("./tmp/server_response.txt","w");
 	if(file == NULL)
 		error("Erro ao abrir o arquivo");
 
