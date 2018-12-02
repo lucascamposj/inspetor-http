@@ -163,7 +163,7 @@ void GetHostFromHeader(char *headerBuffer, int bufferSize, char *result, int res
   GetFromText("Host:", 1, '\r', headerBuffer, bufferSize, result, resultSize);
 }
 
-void GetWgetFileName(char *link, char *response, int responseSize)
+void GetHttpFileName(char *link, char *response, int responseSize)
 {
   int i, j = 0, slashIndex = 0, linkSize = strlen(link);
 

@@ -11,22 +11,10 @@ typedef struct ParseData
   char dataFileName[100];
 } parseData;
 
-/*typedef struct AsmList
-{
-  char Program[204];
-  struct AsmList *nextLine, *previousLine;
-} asmList;
-
-typedef struct AsmList
-{
-  char Program[204];
-  struct AsmList *nextLine, *previousLine;
-} asmList;*/
-
 parseData parseHtml (char *, int);
 FILE * CreateDataFile(char *, char *);
 void GetFromText(char *, int, char, char *, int, char *, int);
 void SaveToFile(char *,int, char *, char *);
 void GetLinkFromHeader(char *, int, char *, int);
-void GetWgetFileName(char *, char *, int);
+void GetHttpFileName(char *, char *, int);
 void GetHostFromHeader(char *, int, char *, int);
