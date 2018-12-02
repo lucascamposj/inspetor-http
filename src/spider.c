@@ -37,9 +37,43 @@ Lucas Campos Jorge - mat. 15/0154135
     #include "spider.h"
 #endif
 
-void Spider(int isDump, spiderList **spiderListHead, int deepNess)
+void Spider(char *link, int isDump, spiderList **spiderListHead, int deepNess)
 {
+  char newLink[500];
+  spiderList *linkToVisit;
+  visitedList *visitedListHead;
 
+  visitedListHead = NULL;
+  AddSpiderList(spiderListHead, NULL, link);
+
+  linkToVisit = *spiderListHead;
+  strcpy(newLink, link);
+
+  while (linkToVisit != NULL)
+  {
+  //  if (VisitedListContains(visitedListHead, newLink) == 0)
+    {
+  //    AddVisitedList(&visitedListHead, newLink);  // Adiciona link nos visitados
+
+      // GetHttpContent(newLink) (pede um novo arquivo do 'tmp' com o newLink)
+
+      if (isDump == 1)
+      {
+        DumpFile(newLink);
+      }
+
+      while (newLink[0] != '\0')
+      {
+        AddSpiderList(spiderListHead, linkToVisit, newLink);
+        // AnaliseHttp(newLink);
+      }
+    }
+
+    linkToVisit = linkToVisit->nextLink;
+    strcpy(newLink, linkToVisit->Link);
+  }
+
+//  DeleteVisitedList(&visitedListHead);
 }
 
 void AddSpiderList(spiderList **spiderListHead, spiderList *fatherLink, char *link)
@@ -83,15 +117,55 @@ void DeleteSpiderList(spiderList **spiderListHead)
 	}
 }
 
-int SpiderListContains(spiderList *spiderListHead, char *link)
+int VisitedListContains(visitedList *visitedListHead, char *link)
 {
-  while (spiderListHead != NULL)
+  while (visitedListHead != NULL)
   {
-    if (strcmp(link, spiderListHead->Link) == 0)
+    if (strcmp(link, visitedListHead->Link) == 0)
       return 1;
 
-    spiderListHead = spiderListHead->nextLink;
+    visitedListHead = visitedListHead->nextLink;
   }
 
   return 0;
+}
+
+void AddVisitedList(visitedList **visitedListHead, char *link)
+{
+  visitedList *contentCreator, *lastElem;
+
+	// Criação da lista do spider final
+	contentCreator = (visitedList *)malloc(sizeof(visitedList));
+
+	if (*visitedListHead == NULL)
+	{
+		*visitedListHead = contentCreator;
+		(*visitedListHead)->nextLink = NULL;
+		(*visitedListHead)->previousLink = NULL;
+	}
+	else
+	{
+		lastElem = *visitedListHead;
+
+		while (lastElem->nextLink != NULL)
+			lastElem = lastElem->nextLink;
+
+		contentCreator->previousLink = lastElem;
+		lastElem->nextLink = contentCreator;
+		contentCreator->nextLink = NULL;
+	}
+
+	strcpy(contentCreator->Link, link);
+}
+
+void DeleteVisitedList(visitedList **visitedListHead)
+{
+	visitedList *aux;
+
+	while (*visitedListHead != NULL)
+	{
+		aux = *visitedListHead;
+		*visitedListHead = (*visitedListHead)->nextLink;
+		free(aux);
+	}
 }

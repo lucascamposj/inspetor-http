@@ -10,7 +10,16 @@ typedef struct SpiderList
   struct SpiderList *nextLink, *previousLink, *fatherLink;
 } spiderList;
 
+typedef struct VisitedList
+{
+  char Link[500];
+  struct VisitedList *nextLink, *previousLink;
+} visitedList;
+
 void AddSpiderList(spiderList **, spiderList *, char *);
+void AddVisitedList(visitedList **, char *);
 void DeleteSpiderList(spiderList **);
-int SpiderListContains(spiderList *, char *); // Verifica se a lista spider já contém o link. Retorna 1 se tiver, 0 se não.
-void Spider(int, spiderList **, int);
+int VisitedListContains(visitedList *, char *); // Verifica se a lista visited já contém o link. Retorna 1 se tiver, 0 se não.
+void Spider(char *, int, spiderList **, int);
+void AddVisitedList(visitedList **, char *);
+void DeleteVisitedList(visitedList **);
