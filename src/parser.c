@@ -61,7 +61,7 @@ parseData parseHtml (char *htmlBuffer, int bufferSize)
     // Copia o nome do arquivo para a struct
     strcpy(data.dataFileName,name);
     // Cria o arquivo '.html'
-    dataFile = CreateDataFile(name, ".html");
+    dataFile = CreateDataFile(name);
 
     // Popula o arquivo '.html' com os dados (se existir algum)
     for (;i < bufferSize; i++)
@@ -81,17 +81,12 @@ parseData parseHtml (char *htmlBuffer, int bufferSize)
   return data;
 }
 
-FILE * CreateDataFile(char *name, char *extention)
+FILE * CreateDataFile(char *name)
 {
   FILE *dataFile;
-  char dataFileName[100];
-
-  // Adicionando o '.asm' no nome do arquivo
-  strcpy(dataFileName,name);
-  strcat(dataFileName,extention);
 
   // Criação do arquivo '.html'
-  dataFile = fopen(dataFileName,"w");
+  dataFile = fopen(name,"w");
 
   if(dataFile == NULL)
   {
@@ -133,13 +128,13 @@ void GetFromText(char *parameter, int displacement, char stopSign, char *buffer,
   }
 }
 
-void SaveToFile(char *string, int stringSize, char *fileName, char *format)
+void SaveToFile(char *string, int stringSize, char *fileName)
 {
   int i;
 
   FILE *dataFile;
 
-  dataFile = CreateDataFile(fileName, format);
+  dataFile = CreateDataFile(fileName);
 
   for (i = 0; i < stringSize; i++)
   {
@@ -166,26 +161,40 @@ void GetHostFromHeader(char *headerBuffer, int bufferSize, char *result, int res
 
 void GetHttpFileName(char *link, char *response, int responseSize)
 {
-  int i, j = 0, slashIndex = 0, linkSize = strlen(link);
+  int i, j = 0, slashIndex = 0, slashCounter = 0, linkSize = strlen(link);
+
+  bzero(response, responseSize);
 
   for (i = 0; i < linkSize; i++)
   {
     if (link[i] == '/')
+    {
       slashIndex = i;
+      slashCounter += 1;
+    }
   }
 
-  for (i = (slashIndex + 1); i < linkSize && j < responseSize; i++)
+  if (slashCounter > 2)
   {
-    response[j] = link[i];
-    j++;
+    for (i = (slashIndex + 1); i < linkSize && j < responseSize; i++)
+    {
+      response[j] = link[i];
+      j++;
+    }
+  }
+  else
+  {
+      strcpy(response, "index.html");
   }
 }
 
 void GetHttpFolderPath(char *link, char *response, int responseSize)
 {
-  int i, j = 0, linkSize = strlen(link);
+  int i = 0, j = 0, linkSize = strlen(link);
   char mainFather[300], httpFileName[300];
   int mainFatherStringSize, httpFileNameSize, folderPathLimit;
+
+  bzero(response, responseSize);
 
   GetHttpMainFather(link, mainFather, 300);
   GetHttpFileName(link, httpFileName, 300);
@@ -198,13 +207,13 @@ void GetHttpFolderPath(char *link, char *response, int responseSize)
   {
     response[j] = link[i];
   }
-
-  response[j] = '\0';
 }
 
 void GetHttpMainFather(char *link, char *response, int responseSize)
 {
   int i, slashIndex = 0, slashCounter = 0, linkSize = strlen(link);
+
+  bzero(response, responseSize);
 
   for (i = 0; i < linkSize; i++)
   {
@@ -220,27 +229,52 @@ void GetHttpMainFather(char *link, char *response, int responseSize)
     }
   }
 
-  for (i = 0; i < slashIndex && i < responseSize; i++)
+  if (slashIndex != 0)
   {
-    response[i] = link[i];
+    for (i = 0; i < slashIndex && i < responseSize; i++)
+    {
+      response[i] = link[i];
+    }
   }
-
-  response[responseSize] = '\0';
+  else
+  {
+    strcpy(response, link);
+  }
 }
 
-void CreateDirectory(char *directoryName)
+void DumpFile(char *link, char *data)
 {
   char *dump;
-  int directoryStringSize = strlen(directoryName);
+  int directoryStringSize, fileNameStringSize, dataSize, linkSize = strlen(link);
+  char directoryName[linkSize], fileName[linkSize];
 
-  dump = (char *)malloc(sizeof(char)*(directoryStringSize + 16)); // 6 - 'Dump/' + '\0'
+  GetHttpFolderPath(link, directoryName, linkSize);
+  GetHttpFileName(link, fileName, linkSize);
+  directoryStringSize = strlen(directoryName);
+  fileNameStringSize = strlen(fileName);
+  dataSize = strlen(data);
+
+  dump = (char *)malloc(sizeof(char)*(directoryStringSize + fileNameStringSize + 16)); // 6 - 'Dump/' + '\0'
 
   strcpy(dump, "mkdir -p ./Dump");
   strcat(dump, directoryName);
-  RemoveChar('/', dump, (directoryStringSize + 16), 1);
+  RemoveChar('/', dump, (directoryStringSize + fileNameStringSize + 16), 1);
 
   // Cria diretório
   system(dump);
+
+  // Concatenação com o nome do arquivo
+  bzero(dump, (directoryStringSize + fileNameStringSize + 16));
+  strcpy(dump, "./Dump");
+  strcat(dump, directoryName);
+  RemoveChar('/', dump, (directoryStringSize + fileNameStringSize + 16), 1); // Remove a barra no final para garantir que sempre vai existir ela.
+  strcat(dump, "/");
+  strcat(dump, fileName);
+
+  // Cria e salva os dados no arquivo
+  SaveToFile(data, dataSize, dump);
+
+  free(dump);
 }
 
 // Remove apenas o char 'removeChar' que estiver no inicio e no fim da string, ou apenas checa no final caso lastOnly seja maior ou menor que 0
