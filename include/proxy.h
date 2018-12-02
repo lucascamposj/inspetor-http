@@ -12,3 +12,5 @@ int proxy_bind(int, struct sockaddr_in *);
 int proxy_accept(int socket);
 int proxy_send(int ,char *);
 int get_ip(char *, char *);
+void get_server_response(char *, char *);
+void error(char *);

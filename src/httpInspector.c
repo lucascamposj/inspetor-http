@@ -17,9 +17,9 @@ Lucas Campos Jorge - mat. 15/0154135
     #include <sys/types.h>
     #include <sys/socket.h>
     #include <netinet/in.h>
-    #include <netdb.h>
 		#include <arpa/inet.h>
     #include <unistd.h>
+		#include<netdb.h>
 #endif
 
 #ifndef _Proxy_library
@@ -46,11 +46,13 @@ int main(int argc, char *argv[])
   int socket, newsocket, pid;
   socklen_t clilen;
   struct sockaddr_in address,internet_address,cli_addr;
+	struct hostent *server;
   int n;
   char buffer[1000];
-	char request[1000], reply[5000];
+	char request[1000], reply[5000000], website_buffer[5000];
 	int connection_status;
 	char ip[100], hostname[500];
+	char request_test[] = "GET /index.html HTTP/1.1\r\nHost: flaviomoura.mat.br/\r\n\r\n";
 
   // Adicionar a leitura do argumento passado pelo terminal
   if(argc == 2)
@@ -65,10 +67,11 @@ int main(int argc, char *argv[])
   int biding_status = proxy_bind(socket, &address);
 
   if(biding_status == -1)
-    printf("ops binding\n");
+    printf("Erro no binding\n");
 
   listen(socket, 5);
   clilen = sizeof(cli_addr);
+
   while(1)
   {
     newsocket = proxy_accept(socket);
@@ -78,8 +81,10 @@ int main(int argc, char *argv[])
 
     pid = fork();
 
-    if (pid < 0)
+    if (pid < 0){
       printf("Erro no fork");
+			exit(1);
+		}
     if (pid == 0)  {
       close(socket);
 
@@ -92,37 +97,49 @@ int main(int argc, char *argv[])
 			int internet_socket = create_socket();
 
 			GetHostFromHeader(request, 1000, hostname, 500);
-			get_ip(hostname, ip);
+			//get_ip(hostname, ip);
 
-			printf("HostName: %s IP: %s\n", hostname, ip);
+			server = gethostbyname(hostname);
+	    if (server == NULL)
+	    	printf("Error, host não encontrado\n");
 
-			internet_address.sin_family = AF_INET;
-			internet_address.sin_port = htons(80);
-			inet_aton(ip, (struct in_addr *) &internet_address.sin_addr.s_addr);
+	    bzero((char *) &internet_address, sizeof(internet_address));
+	    internet_address.sin_family = AF_INET;
+	    bcopy((char *)server->h_addr,(char *)&internet_address.sin_addr.s_addr,server->h_length);
+	    internet_address.sin_port = htons(80);
 
 			connection_status = proxy_connect(socket, &internet_address);
 
 			if(connection_status == -1)
-			{
 			  printf("Erro na conexão.\n");
-			}
 
-			n = write(internet_socket,request,sizeof(request)-1);
+			//n = send(internet_socket,request,sizeof(request),0);
+			n = write(internet_socket, request, strlen(request));
     	if (n < 0) printf("Erro ao escrever no socket internet");
 
-			bzero(reply,sizeof(reply));
-    	n = read(internet_socket,reply,sizeof(reply)-1);
-    	if (n < 0) printf("Erro ao ler o socket internet");
-			printf("Here is the site: %s\n",reply);
+			bzero(reply, sizeof(reply));
+			do
+			{
+				bzero(website_buffer, sizeof(website_buffer));
 
-			/************************************/
+				n = read(internet_socket, website_buffer, sizeof(website_buffer));
+	    	if (n < 0)
+				{
+					printf("Erro ao ler o socket internet");
+					break;
+				}
+				// strcat(reply, website_buffer);
+				printf("%s", website_buffer);
+				//responde ao browser
+				n = write(newsocket,reply,strlen(reply));
+				if (n < 0) printf("Erro ao escrever no socket");
+				printf("%s", reply);
 
-    	n = write(newsocket,reply,sizeof(reply)-1);
-    	if (n < 0) printf("Erro ao escrever no socket");
+			}while(n > 0);
 
-    	exit(0);
+			exit(0);
     }
     else close(newsocket);
-  }
+	}
   return 0;
 }

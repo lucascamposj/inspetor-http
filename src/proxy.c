@@ -22,6 +22,11 @@ Lucas Campos Jorge - mat. 15/0154135
     #include <unistd.h>
 #endif
 
+#ifndef _Parser_library
+  #define _Parser_library
+    #include "parser.h"
+#endif
+
 int create_socket()
 {
   return socket(AF_INET,SOCK_STREAM,0);
@@ -76,4 +81,88 @@ int proxy_accept(int socket){
 
 int proxy_send(int socket, char * message){
   return send(socket, message, sizeof(message), 0);
+}
+
+void error(char *msg)
+{
+  perror(msg);
+  exit(1);
+}
+
+/*
+Função:
+	GetServerResponse: A partir de um Request HTTP busca a resposta do servidor em tmp/server_response
+Argumentos:
+	http: Ponteiro para string com o request HTTP
+*/
+
+void get_server_response(char *hostname, char *url)
+{
+  int sock,port = 80, n;
+	char http_request[300];
+	char path[500];
+	char name[500];
+	char buffer[5000];
+	FILE* file;
+
+	file = fopen("temp.html","w");
+	if(file == NULL)
+		error("Erro ao abrir o arquivo");
+
+	struct sockaddr_in server_address;
+	struct hostent *server;
+
+	printf("url: %s\n", url);
+	printf("hostname: %s\n", hostname);
+
+	GetHttpFolderPath(url, path, 500);
+	GetHttpFileName(url, name, 500);
+	strcat(path, name);
+
+	strcat(http_request,"GET ");
+	strcat(http_request,path);
+	strcat(http_request," HTTP/1.1\r\nHost: ");
+	strcat(http_request,hostname);
+	strcat(http_request,"\r\n\r\n");
+
+	printf("%s\n", http_request);
+
+	// Criando socket
+	sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (socket < 0)
+  	error("Erro ao criar socket");
+
+	// Informações do servidor
+  if ((server = gethostbyname(hostname)) == NULL)
+  	error("Host inexistente");
+
+	//configuração do endereço do servidor
+  bzero((char *) &server_address, sizeof(server_address));
+  server_address.sin_family = AF_INET;
+  bcopy((char *)server->h_addr,
+       (char *)&server_address.sin_addr.s_addr,
+       server->h_length);
+  server_address.sin_port = htons(port);
+
+
+  if (connect(sock,(struct sockaddr *)&server_address,sizeof(server_address)) < 0)
+    error("Erro na conexão");
+
+  if (write(sock,http_request,strlen(http_request)) < 0)
+    error("Erro ao escrever no socket");
+
+	while(1){
+		bzero(buffer,sizeof(buffer));
+  	n = read(sock,buffer,sizeof(buffer) - 1);
+  	if(n < 0)
+    	error("Erro ao ler no socket");
+		if(n > 0){
+	  	printf("%s",buffer);
+			fprintf(file, "%s", buffer);
+		}
+		if(n == 0) break;
+	}
+
+	close(sock);
+	fclose(file);
 }
