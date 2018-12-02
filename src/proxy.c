@@ -17,10 +17,9 @@ Lucas Campos Jorge - mat. 15/0154135
     #include <sys/types.h>
     #include <sys/socket.h>
     #include <netinet/in.h>
+    #include <netdb.h>
+		#include <arpa/inet.h>
     #include <unistd.h>
-		#include <netdb.h>
-		#include<arpa/inet.h>
-
 #endif
 
 int create_socket()

@@ -17,9 +17,9 @@ Lucas Campos Jorge - mat. 15/0154135
     #include <sys/types.h>
     #include <sys/socket.h>
     #include <netinet/in.h>
+    #include <netdb.h>
 		#include <arpa/inet.h>
     #include <unistd.h>
-		#include<netdb.h>
 #endif
 
 #ifndef _Proxy_library
@@ -30,6 +30,11 @@ Lucas Campos Jorge - mat. 15/0154135
 #ifndef _Parser_library
   #define _Parser_library
     #include "parser.h"
+#endif
+
+#ifndef _Spider_library
+  #define _Spider_library
+    #include "spider.h"
 #endif
 
 #define REQUEST_SIZE 1000

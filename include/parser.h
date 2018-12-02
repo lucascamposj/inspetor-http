@@ -20,3 +20,5 @@ void GetHttpFileName(char *, char *, int);
 void GetHostFromHeader(char *, int, char *, int);
 void GetHttpMainFather(char *, char *, int);
 void GetHttpFolderPath(char *, char *, int );
+void CreateDirectory(char *);
+void RemoveChar(char, char *, int, int);
