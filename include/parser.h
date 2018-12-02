@@ -13,6 +13,7 @@ typedef struct ParseData
 
 parseData parseHtml (char *, int);
 FILE * CreateDataFile(char *);
+FILE * OpenDataFile(char *name);
 void GetFromText(char *, int, char, char *, int, char *, int);
 void SaveToFile(char *,int, char *);
 void GetLinkFromHeader(char *, int, char *, int);
@@ -20,5 +21,9 @@ void GetHttpFileName(char *, char *, int);
 void GetHostFromHeader(char *, int, char *, int);
 void GetHttpMainFather(char *, char *, int);
 void GetHttpFolderPath(char *, char *, int );
-void DumpFile(char *, char *);
+void DumpFile(char *);
 void RemoveChar(char, char *, int, int);
+void DumpTemp(char *);
+void RemoveAllFiles();
+void RemoveTmp();
+void CreateTmp();

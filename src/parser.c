@@ -97,6 +97,40 @@ FILE * CreateDataFile(char *name)
   return dataFile;
 }
 
+FILE * OpenDataFile(char *name)
+{
+  FILE *dataFile;
+
+  // Leitura do arquivo
+  dataFile = fopen(name,"r");
+
+  if(dataFile == NULL)
+  {
+    printf("ERRO: Arquivo não aberto\n");
+    exit(1);
+  }
+
+  return dataFile;
+}
+
+void DumpTemp(char *directory)
+{
+  FILE *finalFile, *tempFile;
+  char fileItem;
+
+  finalFile = CreateDataFile(directory);
+  tempFile = OpenDataFile("./tmp/server_response.txt");
+
+  // Leitura de caracter em caracter do arquivo, botando os caracteres em maiúsculo
+  while ((fileItem = (char) fgetc(tempFile)) != EOF)
+  {
+    fprintf(finalFile, "%c", fileItem);
+  }
+
+  fclose(finalFile);
+  fclose(tempFile);
+}
+
 // parameter - O que buscar, displacement - quando começar a pegar o dado (ex: test: dado\r\n, tem displacement de 2 pq tem ':' e espaço até começar o dado)
 // buffer - onde procurar o parameter, bufferSize o tamanho real em memoria do buffer (1000 bytes por exemplo)
 // stopSign - Até onde será procurado o dado (ex: test: dado\r\n, nesse caso o stopSign é '\r')
@@ -242,17 +276,16 @@ void GetHttpMainFather(char *link, char *response, int responseSize)
   }
 }
 
-void DumpFile(char *link, char *data)
+void DumpFile(char *link)
 {
   char *dump;
-  int directoryStringSize, fileNameStringSize, dataSize, linkSize = strlen(link);
+  int directoryStringSize, fileNameStringSize, linkSize = strlen(link);
   char directoryName[linkSize], fileName[linkSize];
 
   GetHttpFolderPath(link, directoryName, linkSize);
   GetHttpFileName(link, fileName, linkSize);
   directoryStringSize = strlen(directoryName);
   fileNameStringSize = strlen(fileName);
-  dataSize = strlen(data);
 
   dump = (char *)malloc(sizeof(char)*(directoryStringSize + fileNameStringSize + 16)); // 6 - 'Dump/' + '\0'
 
@@ -271,8 +304,8 @@ void DumpFile(char *link, char *data)
   strcat(dump, "/");
   strcat(dump, fileName);
 
-  // Cria e salva os dados no arquivo
-  SaveToFile(data, dataSize, dump);
+  // Cria o arquivo final no diretório correto e popula ele com 'tmp/server_result.txt' - resposta do server
+  DumpTemp(dump);
 
   free(dump);
 }
@@ -300,4 +333,20 @@ void RemoveChar(char removeChar, char *item, int size, int lastOnly)
 
   if(item[(size -1)] == removeChar)
     item[(size -1)] = '\0';
+}
+
+void RemoveAllFiles()
+{
+  system("rm -rf ./Dump");
+  system("rm -rf ./tmp");
+}
+
+void RemoveTmp()
+{
+  system("rm -rf ./tmp");
+}
+
+void CreateTmp()
+{
+  system("mkdir ./tmp");
 }
