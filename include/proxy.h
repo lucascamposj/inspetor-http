@@ -14,3 +14,4 @@ int proxy_send(int ,char *);
 int get_ip(char *, char *);
 void get_server_response(char *, char *);
 void error(char *);
+int send_request();

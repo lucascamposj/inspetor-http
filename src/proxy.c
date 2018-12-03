@@ -94,6 +94,7 @@ Função:
 	GetServerResponse: A partir de um Request HTTP busca a resposta do servidor em tmp/server_response
 Argumentos:
 	http: Ponteiro para string com o request HTTP
+	url: Ponteiro para string com a url
 */
 
 void get_server_response(char *hostname, char *url)
@@ -167,4 +168,83 @@ void get_server_response(char *hostname, char *url)
 	shutdown(sock, 2);
 	close(sock);
 	fclose(file);
+}
+
+int send_request(){
+	int ok, n, sock, numbytes;
+	FILE *frequest, *freply;
+	char *request, buffer[5000], hostname[500];
+	int port = 80;
+	struct sockaddr_in server_address;
+	struct hostent *server;
+
+	//criando arquivos
+	if((frequest = fopen("files/request.txt", "r")) == NULL)
+		error("Erro ao criar arquivos files/request.txt");
+
+	if((freply = fopen("files/reply.txt", "w")) == NULL)
+		error("Erro ao criar arquivos files/reply.txt");
+
+	// captura o tamanho do arquivo em bytes
+	fseek(frequest, 0L, SEEK_END);
+	numbytes = ftell(frequest);
+	// reposiciona no início do arquivo
+	fseek(frequest, 0L, SEEK_SET);
+
+	printf("Numbytes:: %d\n",numbytes );
+	// aloca memória
+	request = (char*)calloc(numbytes, sizeof(char));
+	if(request == NULL) error("Erro ao alocar memória");
+
+	/* copy all the text into the buffer */
+	fread(request, sizeof(char), numbytes, frequest);
+	fclose(frequest);
+
+	/* confirm we have read the file by
+	outputing it to the console */
+	printf("The file called test.dat contains this text\n\n%s", request);
+
+	GetHostFromHeader(request, strlen(request), hostname, sizeof(hostname)-1);
+
+	printf("\n\nHOSTANAME: %s\n", hostname);
+
+	// Criando socket
+	sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock < 0)
+  	error("Erro ao criar socket");
+
+	// Informações do servidor
+  if ((server = gethostbyname(hostname)) == NULL)
+  	error("Host inexistente");
+
+	//configuração do endereço do servidor
+	bzero((char *) &server_address, sizeof(server_address));
+	server_address.sin_family = AF_INET;
+	bcopy((char *)server->h_addr,
+			 (char *)&server_address.sin_addr.s_addr,
+			 server->h_length);
+	server_address.sin_port = htons(port);
+
+	if (connect(sock,(struct sockaddr *)&server_address,sizeof(server_address)) < 0)
+		error("Erro na conexão");
+
+	if (write(sock,request,strlen(request)) < 0)
+		error("Erro ao escrever no socket");
+
+	while(1){
+		bzero(buffer,sizeof(buffer));
+		n = read(sock,buffer,sizeof(buffer) - 1);
+		fprintf(stderr, ".");
+		if(n < 0)
+			error("Erro ao ler no socket");
+		if(n > 0){
+			printf("%s",buffer);
+			fprintf(freply, "%s", buffer);
+		}
+		if(n == 0) break;
+	}
+
+	fclose(freply);
+	free(request);
+	return ok;
 }
