@@ -475,3 +475,20 @@ int LinkHasHttpOrHttps(char *link)
 
   return 0;
 }
+
+// Verifica se o link tem 'mailto:' ou '/mailto:' no inicio, se tiver, retorna 1, se não, retorna 0
+int LinkHasMailTo(char *link)
+{
+  int linkSize = StringLenth(link);
+
+  if (linkSize > 8)
+  {
+    if (link[0] == 'm' && link[1] == 'a' && link[2] == 'i' && link[3] == 'l' && link[4] == 't' && link[5] == 'o' && link[6] == ':')
+      return 1;
+
+    if (link[0] == '/' && link[1] == 'm' && link[2] == 'a' && link[3] == 'i' && link[4] == 'l' && link[5] == 't' && link[6] == 'o' && link[7] == ':')
+      return 1;
+  }
+
+  return 0;
+}

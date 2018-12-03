@@ -33,3 +33,4 @@ int StringContains(char *, char, int);
 int StringContainsAtEnd(char *, char, int);
 int StringLenth(char *);
 int LinkHasHttpOrHttps(char *);
+int LinkHasMailTo(char *);

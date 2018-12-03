@@ -123,7 +123,7 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
               w++;
             }
 
-            if (tmpLink[0] == '/' || LinkHasHttpOrHttps(tmpLink) == 0)
+            if ((tmpLink[0] == '/' || LinkHasHttpOrHttps(tmpLink) == 0) && LinkHasMailTo(tmpLink) == 0)
             {
               RemoveChar('/', tmpLink, 500, 0); // Remove a '/' do inicio e final da string, se tiver.
 
@@ -176,10 +176,9 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
       strcpy(newLink, linkToVisit->Link);
   }
   PrintVisited(visitedListHead);
-  printf("Deletando...\n");
   DeleteVisitedList(&visitedListHead);
-  printf("Printando...\n");
-  PrintSpider(*spiderListHead, NULL, 0);
+  //PrintSpider(*spiderListHead, NULL, 0);
+  printf("\nFIM SPIDER\n");
   return;
 }
 
