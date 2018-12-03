@@ -282,9 +282,10 @@ void DumpFile(char *link)
 {
   char *dump;
   int directoryStringSize, fileNameStringSize, linkSize = StringLenth(link), nullName = 0, baseDirectorySize;
-  char directoryName[500], fileName[500], baseDirectory[500];
+  char directoryName[500], fileName[500], baseDirectory[500], fatherLink[500];
 
-  GetLinkWithoutHttp(link, baseDirectory, 500);
+  GetHttpMainFather(link, fatherLink, 500);
+  GetLinkWithoutHttp(fatherLink, baseDirectory, 500);
   GetHttpFolderPath(link, directoryName, linkSize);
   GetHttpFileName(link, fileName, linkSize);
   directoryStringSize = StringLenth(directoryName);
