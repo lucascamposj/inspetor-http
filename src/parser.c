@@ -281,33 +281,37 @@ void GetHttpMainFather(char *link, char *response, int responseSize)
 void DumpFile(char *link)
 {
   char *dump;
-  int directoryStringSize, fileNameStringSize, linkSize = StringLenth(link), nullName = 0;
-  char directoryName[500], fileName[500];
+  int directoryStringSize, fileNameStringSize, linkSize = StringLenth(link), nullName = 0, baseDirectorySize;
+  char directoryName[500], fileName[500], baseDirectory[500];
 
+  GetLinkWithoutHttp(link, baseDirectory, 500);
   GetHttpFolderPath(link, directoryName, linkSize);
   GetHttpFileName(link, fileName, linkSize);
   directoryStringSize = StringLenth(directoryName);
   fileNameStringSize = StringLenth(fileName);
+  baseDirectorySize = StringLenth(baseDirectory);
 
   if (fileNameStringSize == 0)
     nullName = 10;
 
-  dump = (char *)malloc(sizeof(char)*(directoryStringSize + fileNameStringSize + nullName + 16)); // 6 - 'Dump/' + '\0' + nullName se nome vier vazio. (index.html)
+  dump = (char *)malloc(sizeof(char)*(directoryStringSize + fileNameStringSize + baseDirectorySize + nullName + 12)); // 6 - 'Dump/' + '\0' + nullName se nome vier vazio. (index.html)
 
-  ClearString(dump, (sizeof(char)*(directoryStringSize + fileNameStringSize + nullName + 16)));
+  ClearString(dump, (directoryStringSize + fileNameStringSize + baseDirectorySize + nullName + 12));
 
-  strcpy(dump, "mkdir -p ./Dump");
+  strcpy(dump, "mkdir -p ./");
+  strcat(dump, baseDirectory);
   strcat(dump, directoryName);
-  RemoveChar('/', dump, (sizeof(char)*(directoryStringSize + fileNameStringSize + nullName + 16)), 1);
+  RemoveChar('/', dump, (directoryStringSize + fileNameStringSize + baseDirectorySize + nullName + 12), 1);
 
   // Cria diretório
   system(dump);
 
   // Concatenação com o nome do arquivo
-  ClearString(dump, (directoryStringSize + fileNameStringSize + nullName + 16));
-  strcpy(dump, "./Dump");
+  ClearString(dump, (directoryStringSize + fileNameStringSize + baseDirectorySize + nullName + 12));
+  strcpy(dump, "./");
+  strcat(dump, baseDirectory);
   strcat(dump, directoryName);
-  RemoveChar('/', dump, (sizeof(char)*(directoryStringSize + fileNameStringSize + nullName + 16)), 1); // Remove a barra no final para garantir que sempre vai existir ela.
+  RemoveChar('/', dump, (directoryStringSize + fileNameStringSize + baseDirectorySize + nullName + 12), 1); // Remove a barra no final para garantir que sempre vai existir ela.
   strcat(dump, "/");
 
   if (fileName[0] == '\0')
@@ -351,12 +355,6 @@ void RemoveChar(char removeChar, char *item, int size, int lastOnly)
     if(item[(size -1)] == removeChar)
       item[(size -1)] = '\0';
   }
-}
-
-void RemoveAllFiles()
-{
-  system("rm -rf ./Dump");
-  system("rm -rf ./tmp");
 }
 
 void RemoveTmp()
@@ -456,7 +454,7 @@ int StringLenth(char *string)
   return size;
 }
 
-// Verifica se o link tem 'hhtp://' ou 'https://' no inicio, se tiver, retorna 1, se não, retorna 0
+// Verifica se o link tem 'hhtp://' (retorna 1) ou 'https://' (retorna 2) no inicio, se não tiver retorna 0
 int LinkHasHttpOrHttps(char *link)
 {
   int linkSize = StringLenth(link);
@@ -467,7 +465,7 @@ int LinkHasHttpOrHttps(char *link)
       return 1;
 
     if (link[0] == 'h' && link[1] == 't' && link[2] == 't' && link[3] == 'p' && link[4] == 's' && link[5] == ':' && link[6] == '/' && link[7] == '/')
-      return 1;
+      return 2;
   }
 
   return 0;
@@ -488,4 +486,37 @@ int LinkHasMailTo(char *link)
   }
 
   return 0;
+}
+
+void GetLinkWithoutHttp(char *link, char *response, int responseSize)
+{
+  int linkSize = StringLenth(link), i, httpsReturn;
+
+  ClearString(response, responseSize);
+  httpsReturn = LinkHasHttpOrHttps(link);
+
+  switch (httpsReturn)
+  {
+    case 0:
+      strcpy(response, link);
+      break;
+
+    case 1:
+      for (i = 6; i <= linkSize && (i-6) < responseSize; i++)
+      {
+        response[i-6] = link[i];
+      }
+
+      break;
+
+    case 2:
+      for (i = 7; i <= linkSize && (i-7) < responseSize; i++)
+      {
+        response[i-7] = link[i];
+      }
+
+      break;
+  }
+
+  RemoveChar('/', response, responseSize, 1);
 }
