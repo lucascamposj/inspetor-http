@@ -40,19 +40,44 @@ Lucas Campos Jorge - mat. 15/0154135
 #define REQUEST_SIZE 1000
 #define REPLY_SIZE 5000
 
+void topMenu(){
+	printf("-------------------------------------------------------\n");
+	printf("                   HTTTP INSPECTOR                     \n");
+	printf("-------------------------------------------------------\n");
+}
+
+char menu(){
+	char c;
+
+	printf("Digite a funcionalidade desejada: \n");
+	printf("1) Enviar request\n");
+	printf("2) Imprimir Spider\n");
+	printf("3) Realizar Dump \n");
+
+	scanf("%c", &c);
+	getchar();
+
+	return c;
+}
+
 int main(int argc, char *argv[])
 {
   int proxy_port = 0;
-  int socket, newsocket, pid;
-  socklen_t clilen;
-  struct sockaddr_in address,internet_address,cli_addr;
+  int sock, newsock, pid;
 	struct hostent *server;
-  int n;
+  int n, numbytes;
   char buffer[1000];
-	char request[1000], reply[5000000], website_buffer[5000];
+	char request[1000];
 	int connection_status;
-	char ip[100], hostname[500];
-	char request_test[] = "GET /index.html HTTP/1.1\r\nHost: flaviomoura.mat.br/\r\n\r\n";
+	char ip[100], hostname[500], *reply;
+	char request_test[] = "GET / HTTP/1.1\r\nHost: flaviomoura.mat.br/\r\n\r\n";
+	int biding_status;
+	char choice;
+	socklen_t clilen;
+	struct sockaddr_in proxy_address, client_address;
+	FILE *frequest, *freply, *fcache;
+	char yn;
+	int cached = 0;
 
   // Adicionar a leitura do argumento passado pelo terminal
   if(argc == 2)
@@ -60,86 +85,112 @@ int main(int argc, char *argv[])
   else
     proxy_port = 8228;
 
-	// socket da parte servidor
-  socket = create_socket();
-  config_address(proxy_port,&address);
+	topMenu(); //imprime nome do programa
 
-  int biding_status = proxy_bind(socket, &address);
+	// criando socket para receber requisição do browser
+	sock = socket(AF_INET, SOCK_STREAM, 0);
+	if (sock < 0)
+		error("ERROR opening socket");
 
-  if(biding_status == -1)
-    printf("Erro no binding\n");
+	bzero((char *) &proxy_address, sizeof(proxy_address));
 
-  listen(socket, 5);
-  clilen = sizeof(cli_addr);
+	proxy_address.sin_family = AF_INET;
+	proxy_address.sin_addr.s_addr = INADDR_ANY;
+	proxy_address.sin_port = htons(proxy_port);
+
+	if (bind(sock, (struct sockaddr *) &proxy_address, sizeof(proxy_address)) < 0)
+		error("ERROR on binding");
+
+	listen(sock,5);
+	clilen = sizeof(client_address);
+
+	printf("Aguardando browser...\n");
 
   while(1)
   {
-    newsocket = proxy_accept(socket);
+		// libera o socket utiliza outro para lidar com o pedido
+		newsock = accept(sock,(struct sockaddr *) &client_address, &clilen);
+    if (newsock < 0) error("Erro ao aceitar");
+		else close(sock);
 
-    if (newsocket < 0)
-      printf("Erro ao aceitar");
+		bzero(request,sizeof(request));
 
-    pid = fork();
+    n = read(newsock, request, sizeof(request)-1);
+    if(n < 0) error("Erro ao ler o socket");
+		strcat(request,buffer);
 
-    if (pid < 0){
-      printf("Erro no fork");
-			exit(1);
+		if((frequest = fopen("files/request.txt", "w")) == NULL)
+			error("Erro ao criar arquivos files/request.txt");
+		printf("Request do browser:\n\n");
+		printf("%s",request);
+		fprintf(frequest, "%s", request);
+		fclose(frequest);
+
+		if(cached){
+			printf("Deseja retorna o arquivo da cache para o browser?\n");
+			scanf("%c", &yn);
+			getchar();
+			yn = tolower(yn);
+			if(yn == 'y' || yn == 's'){
+				// retorna o arquivo
+				printf("retorna arquivo\n");
+			}
 		}
-    if (pid == 0)  {
-      close(socket);
 
-    	bzero(request,sizeof(request));
-    	n = read(newsocket,request,sizeof(request)-1);
-    	if (n < 0) printf("Erro ao ler o socket");
-			printf("Here is the message: %s\n",request);
+		printf("Deseja editar o pedido antes de enviar para o servidor? (y/n)\n");
 
-			/************* INTERNET *************/
-			int internet_socket = create_socket();
+		scanf("%c", &yn);
+		getchar();
+		yn = tolower(yn);
+		if(yn == 'y' || yn == 's'){
+			system("nano files/request.txt");
+		}
 
-			GetHostFromHeader(request, 1000, hostname, 500);
-			//get_ip(hostname, ip);
+		choice = menu();
 
-			server = gethostbyname(hostname);
-	    if (server == NULL)
-	    	printf("Error, host não encontrado\n");
+		switch (choice) {
+			case '1':
+				send_request();
 
-	    bzero((char *) &internet_address, sizeof(internet_address));
-	    internet_address.sin_family = AF_INET;
-	    bcopy((char *)server->h_addr,(char *)&internet_address.sin_addr.s_addr,server->h_length);
-	    internet_address.sin_port = htons(80);
+				if((freply = fopen("files/reply.txt", "w")) == NULL)
+					error("Erro ao criar arquivos files/reply.txt");
 
-			connection_status = proxy_connect(socket, &internet_address);
+				// // captura o tamanho do arquivo em bytes
+				// fseek(freply, 0L, SEEK_END);
+				// numbytes = ftell(frequest);
+				// // reposiciona no início do arquivo
+				// fseek(freply, 0L, SEEK_SET);
+				// // aloca memória
+				// reply = (char*)calloc(numbytes, sizeof(char));
+				// if(reply == NULL) error("Erro ao alocar memória");
+				//
+				// /* copy all the text into the buffer */
+				// fread(reply, sizeof(char), numbytes, freply);
+				// fclose(freply);
 
-			if(connection_status == -1)
-			  printf("Erro na conexão.\n");
+				while(!EOF){
 
-			//n = send(internet_socket,request,sizeof(request),0);
-			n = write(internet_socket, request, strlen(request));
-    	if (n < 0) printf("Erro ao escrever no socket internet");
-
-			bzero(reply, sizeof(reply));
-			do
-			{
-				bzero(website_buffer, sizeof(website_buffer));
-
-				n = read(internet_socket, website_buffer, sizeof(website_buffer));
-	    	if (n < 0)
-				{
-					printf("Erro ao ler o socket internet");
-					break;
 				}
-				// strcat(reply, website_buffer);
-				printf("%s", website_buffer);
-				//responde ao browser
-				n = write(newsocket,reply,strlen(reply));
-				if (n < 0) printf("Erro ao escrever no socket");
-				printf("%s", reply);
 
-			}while(n > 0);
+				if (write(newsock,reply,strlen(reply)) < 0)
+					error("Erro ao escrever no socket");
 
-			exit(0);
-    }
-    else close(newsocket);
+				break;
+			case '2':
+				printf("spider()\n");
+				break;
+			case '3':
+				printf("dump()");
+				break;
+			default:
+				printf("Opção inválida\n");
+		}
+
+		printf("\n-------------------------------------------------\n");
+		close(newsock);
 	}
+
+	close(sock);
+
   return 0;
 }
