@@ -115,6 +115,7 @@ void get_server_response(char *hostname, char *url)
 	printf("url: %s\n", url);
 	printf("hostname: %s\n", hostname);
 
+	ClearString(http_request,300);
 	GetHttpFolderPath(url, path, 500);
 	GetHttpFileName(url, name, 500);
 	strcat(path, name);
@@ -125,7 +126,7 @@ void get_server_response(char *hostname, char *url)
 	strcat(http_request,hostname);
 	strcat(http_request,"\r\n\r\n");
 
-	printf("%s\n", http_request);
+	printf("Request:\n %s\n", http_request);
 
 	// Criando socket
 	sock = socket(AF_INET, SOCK_STREAM, 0);
