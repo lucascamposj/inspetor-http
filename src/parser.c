@@ -217,7 +217,7 @@ void GetHttpFileName(char *link, char *response, int responseSize)
     response[j] = link[i];
     j++;
   }
-  
+
   if (StringContains(response, '.', responseSize) == 0)
   {
     ClearString(response, responseSize);
@@ -282,7 +282,7 @@ void DumpFile(char *link)
 {
   char *dump;
   int directoryStringSize, fileNameStringSize, linkSize = StringLenth(link), nullName = 0;
-  char directoryName[linkSize], fileName[linkSize];
+  char directoryName[500], fileName[500];
 
   GetHttpFolderPath(link, directoryName, linkSize);
   GetHttpFileName(link, fileName, linkSize);
@@ -296,13 +296,13 @@ void DumpFile(char *link)
 
   strcpy(dump, "mkdir -p ./Dump");
   strcat(dump, directoryName);
-  RemoveChar('/', dump, (directoryStringSize + fileNameStringSize + 16), 1);
+  RemoveChar('/', dump, (directoryStringSize + fileNameStringSize + nullName + 16), 1);
 
   // Cria diretório
   system(dump);
 
   // Concatenação com o nome do arquivo
-  ClearString(dump, (directoryStringSize + fileNameStringSize + 16));
+  ClearString(dump, (directoryStringSize + fileNameStringSize + nullName + 16));
   strcpy(dump, "./Dump");
   strcat(dump, directoryName);
   RemoveChar('/', dump, (directoryStringSize + fileNameStringSize + nullName + 16), 1); // Remove a barra no final para garantir que sempre vai existir ela.
@@ -457,4 +457,21 @@ int StringLenth(char *string)
     size += 1;
   }
   return size;
+}
+
+// Verifica se o link tem 'hhtp://' ou 'https://' no inicio, se tiver, retorna 1, se não, retorna 0
+int LinkHasHttpOrHttps(char *link)
+{
+  int linkSize = StringLenth(link);
+
+  if (linkSize > 7)
+  {
+    if (link[0] == 'h' && link[1] == 't' && link[2] == 't' && link[3] == 'p' && link[4] == ':' && link[5] == '/' && link[6] == '/')
+      return 1;
+
+    if (link[0] == 'h' && link[1] == 't' && link[2] == 't' && link[3] == 'p' && link[4] == 's' && link[5] == ':' && link[6] == '/' && link[7] == '/')
+      return 1;
+  }
+
+  return 0;
 }

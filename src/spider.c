@@ -69,12 +69,10 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
     if (VisitedListContains(visitedListHead, newLink) == 0)
     {
       AddVisitedList(&visitedListHead, newLink);  // Adiciona link nos visitados
-
       RemoveTmp();
       CreateTmp();
       printf("\nBaixando: %s\n", newLink);
       get_server_response(hostname, newLink); // (pede um novo arquivo do 'tmp' com o newLink)
-      printf("Baixado\n");
 
       if (isDump == 1)
       {
@@ -100,14 +98,15 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
           {
             ptr = strstr(txtLine, "src=\"");
 
-            if(ptr != NULL)
+            if(ptr != NULL && ptr < (&txtLine[500] - 5))
             {
               j = ptr + 5;
             }
           }
           else
           {
-            j = ptr + 6;
+            if (ptr < (&txtLine[500] - 5))
+              j = ptr + 6;
           }
 
           if (ptr != NULL)
@@ -124,16 +123,18 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
               w++;
             }
 
-            RemoveChar('/', tmpLink, 500, 1); // Remove a '/' do final da string, se tiver.
-
-            if (tmpLink[0] == '/')
+            if (tmpLink[0] == '/' || LinkHasHttpOrHttps(tmpLink) == 0)
             {
+              RemoveChar('/', tmpLink, 500, 0); // Remove a '/' do inicio e final da string, se tiver.
+
               for (k = 0; k < fatherLinkSize; k++)
                 newLink[k] = fatherLink[k];
 
-              for (k = 0; k < 500; k++)
+              newLink[fatherLinkSize] = '/';
+
+              for (k = 1; k < 500; k++)
               {
-                newLink[k + fatherLinkSize] = tmpLink[k];
+                newLink[k + fatherLinkSize] = tmpLink[k-1];
 
                 if (tmpLink[k] == '\0')
                   break;
@@ -154,7 +155,6 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
             {
               AddSpiderList(spiderListHead, linkToVisit, tmpLink);
             }
-
           }
 
           ClearString(txtLine, 500);
@@ -175,21 +175,31 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
     if (linkToVisit != NULL)
       strcpy(newLink, linkToVisit->Link);
   }
-
+  PrintVisited(visitedListHead);
+  printf("Deletando...\n");
   DeleteVisitedList(&visitedListHead);
+  printf("Printando...\n");
+  PrintSpider(*spiderListHead, NULL, 0);
+  return;
 }
 
-void PrintSpider(spiderList *spiderListHead, spiderList *spiderFather)
+void PrintSpider(spiderList *spiderListHead, spiderList *spiderFather, int tabNum)
 {
   spiderList *mover;
   mover = spiderListHead;
+  int i;
 
   while (mover != NULL)
   {
     if (mover->fatherLink == spiderFather)
     {
-      printf("\n%s\n", mover->Link);
-      PrintSpider(spiderListHead, mover);
+      for (i = 0; i < tabNum; i++)
+      {
+        printf("%c", 0x09);
+      }
+
+      printf("%s\n", mover->Link);
+      PrintSpider(spiderListHead, mover, tabNum + 1);
     }
     mover = mover->nextLink;
   }
@@ -287,4 +297,14 @@ void DeleteVisitedList(visitedList **visitedListHead)
 		*visitedListHead = (*visitedListHead)->nextLink;
 		free(aux);
 	}
+}
+
+void PrintVisited(visitedList *visitedListHead)
+{
+  printf("\nVisitados:\n");
+  while (visitedListHead != NULL)
+  {
+    printf("%s\n", visitedListHead->Link);
+    visitedListHead = visitedListHead->nextLink;
+  }
 }
