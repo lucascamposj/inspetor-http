@@ -281,13 +281,13 @@ void GetHttpMainFather(char *link, char *response, int responseSize)
 void DumpFile(char *link)
 {
   char *dump;
-  int directoryStringSize, fileNameStringSize, linkSize = StringLenth(link), nullName = 0, baseDirectorySize;
+  int directoryStringSize, fileNameStringSize, nullName = 0, baseDirectorySize;
   char directoryName[500], fileName[500], baseDirectory[500], fatherLink[500];
 
   GetHttpMainFather(link, fatherLink, 500);
   GetLinkWithoutHttp(fatherLink, baseDirectory, 500);
-  GetHttpFolderPath(link, directoryName, linkSize);
-  GetHttpFileName(link, fileName, linkSize);
+  GetHttpFolderPath(link, directoryName, 500);
+  GetHttpFileName(link, fileName, 500);
   directoryStringSize = StringLenth(directoryName);
   fileNameStringSize = StringLenth(fileName);
   baseDirectorySize = StringLenth(baseDirectory);
@@ -520,4 +520,34 @@ void GetLinkWithoutHttp(char *link, char *response, int responseSize)
   }
 
   RemoveChar('/', response, responseSize, 1);
+}
+
+FILE * GetHttpFromCache(char *link)
+{
+  FILE *httpFile;
+  char response[500], fileName[500], *finalFile;
+  int responseSize;
+
+  GetLinkWithoutHttp(link, response, 500);
+  GetHttpFileName(link, fileName, 500);
+
+  responseSize = StringLenth(response);
+  finalFile = (char *)malloc(sizeof(char)*(responseSize + 14));
+
+  ClearString(finalFile, (responseSize + 14));
+
+  strcpy(finalFile, "./");
+  strcat(finalFile, response);
+
+  if (fileName[0] == '\0')
+  {
+    RemoveChar('/', finalFile, (responseSize + 14), 1); // Remove a barra no final para garantir que sempre vai existir ela.
+    strcat(finalFile, "/index.html");
+  }
+
+  httpFile = fopen(finalFile, "r");
+
+  free(finalFile);
+
+  return httpFile;
 }

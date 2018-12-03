@@ -67,7 +67,7 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
 
   while (linkToVisit != NULL)
   {
-    if (VisitedListContains(visitedListHead, newLink) == 0)
+    if (VisitedListContains(visitedListHead, newLink) == 0 && StringContains(newLink, '#', StringLenth(newLink)) == 0)
     {
       AddVisitedList(&visitedListHead, newLink);  // Adiciona link nos visitados
       RemoveTmp();
@@ -152,7 +152,7 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
 
             GetHttpMainFather(tmpLink, newLink, 500);
 
-            if (strcmp(fatherLink, newLink) == 0)
+            if (strcmp(fatherLink, newLink) == 0 && StringContains(newLink, '#', StringLenth(newLink)) == 0)
             {
               AddSpiderList(spiderListHead, linkToVisit, tmpLink);
             }

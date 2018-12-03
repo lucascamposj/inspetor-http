@@ -34,3 +34,4 @@ int StringLenth(char *);
 int LinkHasHttpOrHttps(char *);
 int LinkHasMailTo(char *);
 void GetLinkWithoutHttp(char *, char *, int);
+FILE * GetHttpFromCache(char *);
