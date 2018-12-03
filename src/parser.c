@@ -144,7 +144,7 @@ void DumpTemp(char *directory)
 void GetFromText(char *parameter, int displacement, char stopSign, char *buffer, int bufferSize, char *result, int resultSize)
 {
   char *ptr, *i;
-  int paramSize = strlen(parameter) + displacement;
+  int paramSize = StringLenth(parameter) + displacement;
   int j=0;
 
   ClearString(result, resultSize);
@@ -199,7 +199,7 @@ void GetHostFromHeader(char *headerBuffer, int bufferSize, char *result, int res
 
 void GetHttpFileName(char *link, char *response, int responseSize)
 {
-  int i, j = 0, slashIndex = 0, slashCounter = 0, linkSize = strlen(link);
+  int i, j = 0, slashIndex = 0, slashCounter = 0, linkSize = StringLenth(link);
 
   ClearString(response, responseSize);
 
@@ -212,19 +212,12 @@ void GetHttpFileName(char *link, char *response, int responseSize)
     }
   }
 
-  /*if (slashCounter > 2)
-  {*/
-    for (i = (slashIndex + 1); i < linkSize && j < responseSize; i++)
-    {
-      response[j] = link[i];
-      j++;
-    }
-  /*}
-  else
+  for (i = (slashIndex + 1); i < linkSize && j < responseSize; i++)
   {
-      strcpy(response, "index.html");
-  }*/
-
+    response[j] = link[i];
+    j++;
+  }
+  
   if (StringContains(response, '.', responseSize) == 0)
   {
     ClearString(response, responseSize);
@@ -233,7 +226,7 @@ void GetHttpFileName(char *link, char *response, int responseSize)
 
 void GetHttpFolderPath(char *link, char *response, int responseSize)
 {
-  int i = 0, j = 0, linkSize = strlen(link);
+  int i = 0, j = 0, linkSize = StringLenth(link);
   char mainFather[300], httpFileName[300];
   int mainFatherStringSize, httpFileNameSize, folderPathLimit;
 
@@ -242,8 +235,8 @@ void GetHttpFolderPath(char *link, char *response, int responseSize)
   GetHttpMainFather(link, mainFather, 300);
   GetHttpFileName(link, httpFileName, 300);
 
-  mainFatherStringSize = strlen(mainFather);
-  httpFileNameSize = strlen(httpFileName);
+  mainFatherStringSize = StringLenth(mainFather);
+  httpFileNameSize = StringLenth(httpFileName);
   folderPathLimit = linkSize - httpFileNameSize;
 
   for (i = mainFatherStringSize; i < folderPathLimit && j < responseSize; i++, j++)
@@ -254,7 +247,7 @@ void GetHttpFolderPath(char *link, char *response, int responseSize)
 
 void GetHttpMainFather(char *link, char *response, int responseSize)
 {
-  int i, slashIndex = 0, slashCounter = 0, linkSize = strlen(link);
+  int i, slashIndex = 0, slashCounter = 0, linkSize = StringLenth(link);
 
   ClearString(response, responseSize);
 
@@ -288,13 +281,13 @@ void GetHttpMainFather(char *link, char *response, int responseSize)
 void DumpFile(char *link)
 {
   char *dump;
-  int directoryStringSize, fileNameStringSize, linkSize = strlen(link), nullName = 0;
+  int directoryStringSize, fileNameStringSize, linkSize = StringLenth(link), nullName = 0;
   char directoryName[linkSize], fileName[linkSize];
 
   GetHttpFolderPath(link, directoryName, linkSize);
   GetHttpFileName(link, fileName, linkSize);
-  directoryStringSize = strlen(directoryName);
-  fileNameStringSize = strlen(fileName);
+  directoryStringSize = StringLenth(directoryName);
+  fileNameStringSize = StringLenth(fileName);
 
   if (fileNameStringSize == 0)
     nullName = 10;
@@ -437,4 +430,31 @@ int StringContains(char *string, char item, int size)
 			quantity += 1;
 
 	return quantity;
+}
+
+// Verifica se a string contem um caracter na sua ultima posição preenchida (retorna 1 se tiver, 0 se não)
+int StringContainsAtEnd(char *string, char item, int size)
+{
+	if (string[size - 1] == item)
+		return 1;
+
+	for (int i = (size - 2); i > 0; i--)
+		if (string[i] == item && string[i + 1] == '\0')
+			return 1;
+
+	return 0;
+}
+
+// GARANTINDO que a string tem '\0' no final, essa função retorna a quantidade de caracteres (sem contar o '\0')
+int StringLenth(char *string)
+{
+  int i, size = 0;
+  for (i = 0; ;i++)
+  {
+    if (string[i] == '\0')
+      break;
+
+    size += 1;
+  }
+  return size;
 }

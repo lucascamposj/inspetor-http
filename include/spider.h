@@ -23,3 +23,4 @@ int VisitedListContains(visitedList *, char *); // Verifica se a lista visited j
 void Spider(char *, char *, int, spiderList **);
 void AddVisitedList(visitedList **, char *);
 void DeleteVisitedList(visitedList **);
+void PrintSpider(spiderList *, spiderList *);

@@ -39,17 +39,29 @@ Lucas Campos Jorge - mat. 15/0154135
 
 void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
 {
-  char newLink[500], tmpLink[500], txtLine[500], *ptr, fatherLink[500], *j;
+  char newLink[500], tmpLink[500], txtLine[500], fatherLink[500], *j, *ptr;
   int i = 0, w, k, txtItem, fatherLinkSize;
   spiderList *linkToVisit;
   visitedList *visitedListHead;
   FILE *tmpFile;
 
+  // Zera todas as strings no inicio
+  ClearString(newLink, 500);
+  ClearString(tmpLink, 500);
+  ClearString(txtLine, 500);
+  ClearString(fatherLink, 500);
+
   AddSpiderList(spiderListHead, NULL, link);
   visitedListHead = NULL;
   linkToVisit = *spiderListHead;
   GetHttpMainFather(link, fatherLink, 500);
-  fatherLinkSize = strlen(fatherLink);
+  fatherLinkSize = StringLenth(fatherLink);
+
+  if (StringContainsAtEnd(fatherLink, '/', 500) == 1)
+  {
+    RemoveChar('/', fatherLink, 500, 1);
+  }
+
   strcpy(newLink, link);
 
   while (linkToVisit != NULL)
@@ -71,8 +83,8 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
 
       tmpFile = OpenDataFile("./tmp/server_response.txt");
 
-      bzero(txtLine, 500);
-      bzero(tmpLink, 500);
+      ClearString(txtLine, 500);
+      ClearString(tmpLink, 500);
 
       while ((txtItem = (char) fgetc(tmpFile)) != EOF)
       {
@@ -145,13 +157,17 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
 
           }
 
-          bzero(txtLine, 500);
-          bzero(tmpLink, 500);
+          ClearString(txtLine, 500);
+          ClearString(tmpLink, 500);
         }
       }
 
       fclose(tmpFile);
     }
+
+    ClearString(newLink, 500);
+    ClearString(txtLine, 500);
+    ClearString(tmpLink, 500);
 
     linkToVisit = linkToVisit->nextLink;
 
@@ -161,6 +177,22 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
   }
 
   DeleteVisitedList(&visitedListHead);
+}
+
+void PrintSpider(spiderList *spiderListHead, spiderList *spiderFather)
+{
+  spiderList *mover;
+  mover = spiderListHead;
+
+  while (mover != NULL)
+  {
+    if (mover->fatherLink == spiderFather)
+    {
+      printf("\n%s\n", mover->Link);
+      PrintSpider(spiderListHead, mover);
+    }
+    mover = mover->nextLink;
+  }
 }
 
 void AddSpiderList(spiderList **spiderListHead, spiderList *fatherLink, char *link)

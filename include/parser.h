@@ -30,3 +30,5 @@ void CreateTmp();
 void ClearString(char *, int);
 void RemoveTmpHeader();
 int StringContains(char *, char, int);
+int StringContainsAtEnd(char *, char, int);
+int StringLenth(char *);
