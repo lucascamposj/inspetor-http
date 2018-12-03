@@ -147,7 +147,7 @@ void GetFromText(char *parameter, int displacement, char stopSign, char *buffer,
   int paramSize = strlen(parameter) + displacement;
   int j=0;
 
-  bzero(result, resultSize);
+  ClearString(result, resultSize);
   ptr = strstr(buffer, parameter);
 
   if (ptr != NULL)
@@ -201,7 +201,7 @@ void GetHttpFileName(char *link, char *response, int responseSize)
 {
   int i, j = 0, slashIndex = 0, slashCounter = 0, linkSize = strlen(link);
 
-  bzero(response, responseSize);
+  ClearString(response, responseSize);
 
   for (i = 0; i < linkSize; i++)
   {
@@ -212,17 +212,22 @@ void GetHttpFileName(char *link, char *response, int responseSize)
     }
   }
 
-  if (slashCounter > 2)
-  {
+  /*if (slashCounter > 2)
+  {*/
     for (i = (slashIndex + 1); i < linkSize && j < responseSize; i++)
     {
       response[j] = link[i];
       j++;
     }
-  }
+  /*}
   else
   {
       strcpy(response, "index.html");
+  }*/
+
+  if (StringContains(response, '.', responseSize) == 0)
+  {
+    ClearString(response, responseSize);
   }
 }
 
@@ -232,7 +237,7 @@ void GetHttpFolderPath(char *link, char *response, int responseSize)
   char mainFather[300], httpFileName[300];
   int mainFatherStringSize, httpFileNameSize, folderPathLimit;
 
-  bzero(response, responseSize);
+  ClearString(response, responseSize);
 
   GetHttpMainFather(link, mainFather, 300);
   GetHttpFileName(link, httpFileName, 300);
@@ -251,7 +256,7 @@ void GetHttpMainFather(char *link, char *response, int responseSize)
 {
   int i, slashIndex = 0, slashCounter = 0, linkSize = strlen(link);
 
-  bzero(response, responseSize);
+  ClearString(response, responseSize);
 
   for (i = 0; i < linkSize; i++)
   {
@@ -304,7 +309,7 @@ void DumpFile(char *link)
   system(dump);
 
   // Concatenação com o nome do arquivo
-  bzero(dump, (directoryStringSize + fileNameStringSize + 16));
+  ClearString(dump, (directoryStringSize + fileNameStringSize + 16));
   strcpy(dump, "./Dump");
   strcat(dump, directoryName);
   RemoveChar('/', dump, (directoryStringSize + fileNameStringSize + nullName + 16), 1); // Remove a barra no final para garantir que sempre vai existir ela.
@@ -421,4 +426,15 @@ void RemoveTmpHeader()
 
   fclose(tmpFile);
   fclose(newTmp);
+}
+
+// Verifica a quantidade de vezes que um item aparece na string
+int StringContains(char *string, char item, int size)
+{
+	int quantity = 0;
+	for (int i = 0; i < (size - 1); i++)
+		if (string[i] == item)
+			quantity += 1;
+
+	return quantity;
 }

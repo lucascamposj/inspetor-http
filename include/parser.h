@@ -29,3 +29,4 @@ void RemoveTmp();
 void CreateTmp();
 void ClearString(char *, int);
 void RemoveTmpHeader();
+int StringContains(char *, char, int);
