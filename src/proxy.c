@@ -112,8 +112,8 @@ void get_server_response(char *hostname, char *url)
 	struct sockaddr_in server_address;
 	struct hostent *server;
 
-	printf("url: %s\n", url);
-	printf("hostname: %s\n", hostname);
+	// printf("url: %s\n", url);
+	// printf("hostname: %s\n", hostname);
 
 	ClearString(http_request,300);
 	GetHttpFolderPath(url, path, 500);
@@ -126,7 +126,7 @@ void get_server_response(char *hostname, char *url)
 	strcat(http_request,hostname);
 	strcat(http_request,"\r\n\r\n");
 
-	printf("Request:\n %s\n", http_request);
+	// printf("Request:\n %s\n", http_request);
 
 	// Criando socket
 	sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -155,15 +155,16 @@ void get_server_response(char *hostname, char *url)
 	while(1){
 		bzero(buffer,sizeof(buffer));
   	n = read(sock,buffer,sizeof(buffer) - 1);
+		fprintf(stderr, ".");
   	if(n < 0)
     	error("Erro ao ler no socket");
 		if(n > 0){
-	  	printf("%s",buffer);
+	  	// printf("%s",buffer);
 			fprintf(file, "%s", buffer);
 		}
 		if(n == 0) break;
 	}
-	shutdown(sock,2);
+	shutdown(sock, 2);
 	close(sock);
 	fclose(file);
 }
