@@ -64,8 +64,6 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
       get_server_response(hostname, newLink); // (pede um novo arquivo do 'tmp' com o newLink)
       printf("Baixado\n");
 
-      // RemoveTmpHeader();
-
       if (isDump == 1)
       {
         DumpFile(newLink);
@@ -151,6 +149,8 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
           bzero(tmpLink, 500);
         }
       }
+
+      fclose(tmpFile);
     }
 
     linkToVisit = linkToVisit->nextLink;

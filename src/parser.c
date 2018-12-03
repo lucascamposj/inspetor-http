@@ -118,8 +118,10 @@ void DumpTemp(char *directory)
   FILE *finalFile, *tempFile;
   char fileItem;
 
+  RemoveTmpHeader();
+
   finalFile = CreateDataFile(directory);
-  tempFile = OpenDataFile("./tmp/server_response.txt");
+  tempFile = OpenDataFile("./tmp/new_server_response.txt");
 
   // Leitura de caracter em caracter do arquivo, botando os caracteres em maiúsculo
   while ((fileItem = (char) fgetc(tempFile)) != EOF)
@@ -129,6 +131,8 @@ void DumpTemp(char *directory)
 
   fclose(finalFile);
   fclose(tempFile);
+
+  system("rm ./tmp/new_server_response.txt");
 }
 
 // parameter - O que buscar, displacement - quando começar a pegar o dado (ex: test: dado\r\n, tem displacement de 2 pq tem ':' e espaço até começar o dado)
@@ -375,4 +379,46 @@ void ClearString(char *string, int size)
 {
 	for (int i = 0; i<size; i++)
 		string[i] = '\0';
+}
+
+void RemoveTmpHeader()
+{
+  FILE *tmpFile, *newTmp;
+  char txtItem;
+  int wasCrNl, wasCr, isHeader = 1;
+  tmpFile = OpenDataFile("./tmp/server_response.txt");
+  newTmp = CreateDataFile("./tmp/new_server_response.txt");
+
+  while ((txtItem = (char) fgetc(tmpFile)) != EOF)
+  {
+    if (isHeader == 1)
+    {
+      if (txtItem == '\n' && wasCr == 1)
+      {
+        wasCrNl += 1;
+      }
+      else
+      {
+        wasCr = 0;
+
+        if (txtItem != '\r')
+          wasCrNl = 0;
+      }
+
+      if (txtItem == '\r')
+        wasCr = 1;
+
+      if (wasCrNl == 2)
+      {
+        isHeader = 0;
+      }
+    }
+    else
+    {
+      fprintf(newTmp, "%c", txtItem);
+    }
+  }
+
+  fclose(tmpFile);
+  fclose(newTmp);
 }

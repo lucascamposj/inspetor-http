@@ -28,3 +28,4 @@ void RemoveAllFiles();
 void RemoveTmp();
 void CreateTmp();
 void ClearString(char *, int);
+void RemoveTmpHeader();
