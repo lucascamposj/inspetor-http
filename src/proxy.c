@@ -163,7 +163,7 @@ void get_server_response(char *hostname, char *url)
 		}
 		if(n == 0) break;
 	}
-
+	shutdown(sock,2);
 	close(sock);
 	fclose(file);
 }
