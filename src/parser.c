@@ -294,9 +294,11 @@ void DumpFile(char *link)
 
   dump = (char *)malloc(sizeof(char)*(directoryStringSize + fileNameStringSize + nullName + 16)); // 6 - 'Dump/' + '\0' + nullName se nome vier vazio. (index.html)
 
+  ClearString(dump, (sizeof(char)*(directoryStringSize + fileNameStringSize + nullName + 16)));
+
   strcpy(dump, "mkdir -p ./Dump");
   strcat(dump, directoryName);
-  RemoveChar('/', dump, (directoryStringSize + fileNameStringSize + nullName + 16), 1);
+  RemoveChar('/', dump, (sizeof(char)*(directoryStringSize + fileNameStringSize + nullName + 16)), 1);
 
   // Cria diretório
   system(dump);
@@ -305,7 +307,7 @@ void DumpFile(char *link)
   ClearString(dump, (directoryStringSize + fileNameStringSize + nullName + 16));
   strcpy(dump, "./Dump");
   strcat(dump, directoryName);
-  RemoveChar('/', dump, (directoryStringSize + fileNameStringSize + nullName + 16), 1); // Remove a barra no final para garantir que sempre vai existir ela.
+  RemoveChar('/', dump, (sizeof(char)*(directoryStringSize + fileNameStringSize + nullName + 16)), 1); // Remove a barra no final para garantir que sempre vai existir ela.
   strcat(dump, "/");
 
   if (fileName[0] == '\0')
@@ -325,25 +327,30 @@ void DumpFile(char *link)
 void RemoveChar(char removeChar, char *item, int size, int lastOnly)
 {
   int i;
-  if(item[0] == removeChar && lastOnly == 0)
+  if (size > 0)
   {
-    for(i = 0; i<(size - 2); i++)
+    if(lastOnly == 0 && item[0] == removeChar)
     {
-      item[i] = item[i + 1];
-    }
-  }
+      for(i = 0; i<(size - 2); i++)
+      {
+        item[i] = item[i + 1];
+      }
 
-  for(i = (size -2); i > 0; i--)
-  {
-    if(item[i] == removeChar && item[i+1] == '\0')
+      item[size - 2] = '\0';
+    }
+
+    for(i = (size -2); i > 0; i--)
     {
-      item[i] = '\0';
-      break;
+      if(item[i] == removeChar && item[i+1] == '\0')
+      {
+        item[i] = '\0';
+        break;
+      }
     }
-  }
 
-  if(item[(size -1)] == removeChar)
-    item[(size -1)] = '\0';
+    if(item[(size -1)] == removeChar)
+      item[(size -1)] = '\0';
+  }
 }
 
 void RemoveAllFiles()

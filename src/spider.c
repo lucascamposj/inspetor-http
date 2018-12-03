@@ -176,11 +176,8 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
     if (linkToVisit != NULL)
       strcpy(newLink, linkToVisit->Link);
   }
-  PrintVisited(visitedListHead);
+
   DeleteVisitedList(&visitedListHead);
-  //PrintSpider(*spiderListHead, NULL, 0);
-  printf("\nFIM SPIDER\n");
-  return;
 }
 
 void PrintSpider(spiderList *spiderListHead, spiderList *spiderFather, int tabNum)
