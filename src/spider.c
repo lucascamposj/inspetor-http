@@ -55,12 +55,13 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
   visitedListHead = NULL;
   linkToVisit = *spiderListHead;
   GetHttpMainFather(link, fatherLink, 500);
-  fatherLinkSize = StringLenth(fatherLink);
 
   if (StringContainsAtEnd(fatherLink, '/', 500) == 1)
   {
     RemoveChar('/', fatherLink, 500, 1);
   }
+
+  fatherLinkSize = StringLenth(fatherLink);
 
   strcpy(newLink, link);
 
@@ -89,7 +90,7 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
         txtLine[i] = txtItem;
         i++;
 
-        if (txtItem == '\n')
+        if (txtItem == '\n' || i > 498)
         {
           i = 0;
           ptr = strstr(txtLine, "href=\"");
@@ -229,6 +230,7 @@ void AddSpiderList(spiderList **spiderListHead, spiderList *fatherLink, char *li
 		contentCreator->nextLink = NULL;
 	}
 
+  ClearString(contentCreator->Link, 500);
 	strcpy(contentCreator->Link, link);
   contentCreator->fatherLink = fatherLink;
 }
@@ -283,6 +285,7 @@ void AddVisitedList(visitedList **visitedListHead, char *link)
 		contentCreator->nextLink = NULL;
 	}
 
+  ClearString(contentCreator->Link, 500);
 	strcpy(contentCreator->Link, link);
 }
 

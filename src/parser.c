@@ -310,17 +310,7 @@ void DumpFile(char *link)
 
   if (fileName[0] == '\0')
   {
-    fileName[0] = 'i';
-    fileName[1] = 'n';
-    fileName[2] = 'd';
-    fileName[3] = 'e';
-    fileName[4] = 'x';
-    fileName[5] = '.';
-    fileName[6] = 'h';
-    fileName[7] = 't';
-    fileName[8] = 'm';
-    fileName[9] = 'l';
-    fileName[10] = '\0';
+    strcpy(fileName, "index.html");
   }
 
   strcat(dump, fileName);
