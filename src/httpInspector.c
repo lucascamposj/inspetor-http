@@ -79,7 +79,9 @@ int main(int argc, char *argv[])
 	FILE *frequest, *freply, *fcache;
 	char yn;
 	int cached = 0;
-	spiderList **spider;
+	spiderList *spider;
+
+  spider = NULL;
 
   // Adicionar a leitura do argumento passado pelo terminal
   if(argc == 2)
@@ -173,27 +175,22 @@ int main(int argc, char *argv[])
 
 				break;
 			case '2':
-				printf("%d\n", sizeof(link));
-				printf("%d\n", sizeof(hostname));
-				printf("%d\n", sizeof(request));
-
 				printf("Request: \n%s\n", request);
-				GetLinkFromHeader(link, 500, request, 1000);
-				GetHostFromHeader(hostname, 500, request, 1000);
+        GetLinkFromHeader(request, 1000, link, 500);
+        GetHostFromHeader(request, 1000, hostname, 500);
 				printf("link: %s", link);
 				printf("host: %s", hostname);
 
-				Spider(link, hostname, 0, spider);
-				PrintSpider(*spider, NULL, 0);
-				DeleteSpiderList(spider);
+				Spider(link, hostname, 0, &spider);
+				PrintSpider(spider, NULL, 0);
+				DeleteSpiderList(&spider);
 
 				break;
 			case '3':
-				GetLinkFromHeader(link, sizeof(link), request, sizeof(request));
-				GetHostFromHeader(hostname, sizeof(hostname), request, sizeof(request));
-
-				Spider(link, hostname, 1, spider);
-				DeleteSpiderList(spider);
+        GetLinkFromHeader(request, 1000, link, 500);
+        GetHostFromHeader(request, 1000, hostname, 500);
+				Spider(link, hostname, 1, &spider);
+				DeleteSpiderList(&spider);
 
 				break;
 			default:
