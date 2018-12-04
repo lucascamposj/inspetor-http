@@ -79,15 +79,10 @@ int main(int argc, char *argv[])
 	struct sockaddr_in proxy_address, client_address;
 	FILE *frequest, *freply, *fcache;
 	char yn;
-<<<<<<< HEAD
-	int cached = 0,on = 1;
-	spiderList **spider;
-=======
 	int cached = 0;
 	spiderList *spider;
 
   spider = NULL;
->>>>>>> 400cdf06259a1f5d0ee1bdb1bae1a63e3d371167
 
   // Adicionar a leitura do argumento passado pelo terminal
   if(argc == 2)
@@ -185,13 +180,8 @@ int main(int argc, char *argv[])
 				break;
 			case '2':
 				printf("Request: \n%s\n", request);
-<<<<<<< HEAD
-				GetLinkFromHeader(request, sizeof(request), link, sizeof(link));
-				GetHostFromHeader(request, sizeof(request), hostname, sizeof(hostname));
-=======
         GetLinkFromHeader(request, 1000, link, 500);
         GetHostFromHeader(request, 1000, hostname, 500);
->>>>>>> 400cdf06259a1f5d0ee1bdb1bae1a63e3d371167
 				printf("link: %s", link);
 				printf("host: %s", hostname);
 
@@ -201,18 +191,10 @@ int main(int argc, char *argv[])
 
 				break;
 			case '3':
-<<<<<<< HEAD
-				GetLinkFromHeader(request, sizeof(request), link, sizeof(link));
-				GetHostFromHeader(request, sizeof(request), hostname, sizeof(hostname));
-
-				Spider(link, hostname, 1, spider);
-				DeleteSpiderList(spider);
-=======
         GetLinkFromHeader(request, 1000, link, 500);
         GetHostFromHeader(request, 1000, hostname, 500);
 				Spider(link, hostname, 1, &spider);
 				DeleteSpiderList(&spider);
->>>>>>> 400cdf06259a1f5d0ee1bdb1bae1a63e3d371167
 
 				break;
 			default:
