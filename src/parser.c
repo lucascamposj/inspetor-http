@@ -295,24 +295,24 @@ void DumpFile(char *link)
   if (fileNameStringSize == 0)
     nullName = 10;
 
-  dump = (char *)malloc(sizeof(char)*(directoryStringSize + fileNameStringSize + baseDirectorySize + nullName + 12)); // 6 - 'Dump/' + '\0' + nullName se nome vier vazio. (index.html)
+  dump = (char *)malloc(sizeof(char)*(directoryStringSize + fileNameStringSize + baseDirectorySize + nullName + 19)); // 6 - 'Dump/' + '\0' + nullName se nome vier vazio. (index.html)
 
-  ClearString(dump, (directoryStringSize + fileNameStringSize + baseDirectorySize + nullName + 12));
+  ClearString(dump, (directoryStringSize + fileNameStringSize + baseDirectorySize + nullName + 19));
 
-  strcpy(dump, "mkdir -p ./");
+  strcpy(dump, "mkdir -p ../cache/");
   strcat(dump, baseDirectory);
   strcat(dump, directoryName);
-  RemoveChar('/', dump, (directoryStringSize + fileNameStringSize + baseDirectorySize + nullName + 12), 1);
+  RemoveChar('/', dump, (directoryStringSize + fileNameStringSize + baseDirectorySize + nullName + 19), 1);
 
   // Cria diretório
   system(dump);
 
   // Concatenação com o nome do arquivo
-  ClearString(dump, (directoryStringSize + fileNameStringSize + baseDirectorySize + nullName + 12));
-  strcpy(dump, "./");
+  ClearString(dump, (directoryStringSize + fileNameStringSize + baseDirectorySize + nullName + 19));
+  strcpy(dump, "../cache/");
   strcat(dump, baseDirectory);
   strcat(dump, directoryName);
-  RemoveChar('/', dump, (directoryStringSize + fileNameStringSize + baseDirectorySize + nullName + 12), 1); // Remove a barra no final para garantir que sempre vai existir ela.
+  RemoveChar('/', dump, (directoryStringSize + fileNameStringSize + baseDirectorySize + nullName + 19), 1); // Remove a barra no final para garantir que sempre vai existir ela.
   strcat(dump, "/");
 
   if (fileName[0] == '\0')
@@ -532,16 +532,16 @@ FILE * GetHttpFromCache(char *link)
   GetHttpFileName(link, fileName, 500);
 
   responseSize = StringLenth(response);
-  finalFile = (char *)malloc(sizeof(char)*(responseSize + 14));
+  finalFile = (char *)malloc(sizeof(char)*(responseSize + 21));
 
-  ClearString(finalFile, (responseSize + 14));
+  ClearString(finalFile, (responseSize + 21));
 
-  strcpy(finalFile, "./");
+  strcpy(finalFile, "../cache/");
   strcat(finalFile, response);
 
   if (fileName[0] == '\0')
   {
-    RemoveChar('/', finalFile, (responseSize + 14), 1); // Remove a barra no final para garantir que sempre vai existir ela.
+    RemoveChar('/', finalFile, (responseSize + 21), 1); // Remove a barra no final para garantir que sempre vai existir ela.
     strcat(finalFile, "/index.html");
   }
 
