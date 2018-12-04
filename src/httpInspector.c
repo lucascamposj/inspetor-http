@@ -50,10 +50,11 @@ void topMenu(){
 char menu(){
 	char c;
 
-	printf("Digite a funcionalidade desejada: \n");
+	printf("\n------------------------ MENU -------------------------\n");
 	printf("1) Enviar request\n");
 	printf("2) Imprimir Spider\n");
 	printf("3) Realizar Dump \n");
+	printf("Digite a funcionalidade desejada: ");
 
 	scanf("%c", &c);
 	getchar();
@@ -82,10 +83,17 @@ int main(int argc, char *argv[])
   spider = NULL;
 
   // Adicionar a leitura do argumento passado pelo terminal
-  if(argc == 2)
-    proxy_port = atoi(argv[1]);
+  if(argc == 3)
+	{
+		if(strcmp(argv[1], "-p") == 0)
+    	proxy_port = atoi(argv[2]);
+	}
   else
+	{
     proxy_port = 8228;
+	}
+
+	printf("Porta escolhida: %d\n", proxy_port);
 
 	topMenu(); //imprime nome do programa
 
@@ -107,12 +115,12 @@ int main(int argc, char *argv[])
 	listen(sock, 10);
 	clilen = sizeof(client_address);
 
-	printf("Aguardando browser...\n");
+	printf("Aguardando browser...\n\n");
 
   // while(1){
 		// libera o socket utiliza outro para lidar com o pedido
 		sock = accept(sock,(struct sockaddr *) &client_address, &clilen);
-    if (newsock < 0) error("Erro ao aceitar");
+    if (sock < 0) error("Erro ao aceitar");
 
 		bzero(request,sizeof(request));
 
@@ -137,7 +145,6 @@ int main(int argc, char *argv[])
 			yn = tolower(yn);
 			if(yn == 'y' || yn == 's'){
 				send(sock, "HTTP/1.0 200 OK\r\n\r\n", 19, 0);
-				printf("%d",sizeof(buffer));
 				while(fread(buffer, 1, sizeof(buffer), fcache) == sizeof(buffer)){
 					send(sock, buffer, sizeof(buffer), 0);
 				}
@@ -147,7 +154,7 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		printf("Deseja editar o pedido antes de enviar para o servidor? (y/n)\n");
+		printf("Deseja editar o pedido antes de enviar para o servidor? (y/n): ");
 
 		scanf("%c", &yn);
 		getchar();
@@ -163,7 +170,7 @@ int main(int argc, char *argv[])
 				send_request();
 				printf("\n\n");
 
-				printf("Deseja editar a resposta antes de enviar para o browser(y/n)?: ");
+				printf("Deseja editar a resposta antes de enviar para o browser? (y/n): ");
 
 				scanf("%c", &yn);
 				getchar();
@@ -184,18 +191,18 @@ int main(int argc, char *argv[])
 
 				break;
 			case '2':
-				printf("Request: \n%s\n", request);
+				printf("\nSPIDER:\n");
         GetLinkFromHeader(request, sizeof(request), link, sizeof(link));
-        GetHostFromHeader(request, sizeof(request), hostname, sizeof(request));
+        GetHostFromHeader(request, sizeof(request), hostname, sizeof(hostname));
 
-				printf("\n\n");
 				Spider(link, hostname, 0, &spider);
-				PrintSpider(spider, NULL, 0);
 				printf("\n\n");
+				PrintSpider(spider, NULL, 0);
 				DeleteSpiderList(&spider);
 
 				break;
 			case '3':
+				printf("\nDUMP:\n");
         GetLinkFromHeader(request, sizeof(request), link, sizeof(link));
         GetHostFromHeader(request, sizeof(request), hostname, sizeof(hostname));
 				Spider(link, hostname, 1, &spider);
@@ -205,7 +212,7 @@ int main(int argc, char *argv[])
 			default:
 				printf("Opção inválida\n");
 		}
-		close(sock);
+		//close(sock);
 	// }
 
   return 0;
