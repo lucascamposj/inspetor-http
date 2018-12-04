@@ -10,16 +10,16 @@ LIBS=-lm
 _DEPS = proxy.h parser.h spider.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = httpInspector.o proxy.o parser.o spider.o
+_OBJ = aracne.o proxy.o parser.o spider.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 
 $(ODIR)/%.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-all: clearscreen clean httpInspector
+all: clearscreen clean aracne
 
-httpInspector: $(OBJ)
+aracne: $(OBJ)
 	gcc -std=c99  -o $@ $^ $(CFLAGS) $(LIBS)
 
 clearscreen:
@@ -28,4 +28,4 @@ clearscreen:
 .PHONY: clean
 
 clean:
-	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~ httpInspector
+	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~ aracne
