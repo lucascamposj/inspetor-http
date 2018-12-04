@@ -73,6 +73,9 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
       RemoveTmp();
       CreateTmp();
 
+			if(isDump == 1)
+				printf("\nDownloading: %s\n", newLink);
+
       get_server_response(hostname, newLink); // (pede um novo arquivo do 'tmp' com o newLink)
 
       if (isDump == 1)
