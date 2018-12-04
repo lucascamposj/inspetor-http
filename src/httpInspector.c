@@ -152,28 +152,22 @@ int main(int argc, char *argv[])
 			case '1':
 				send_request();
 
+				printf("Deseja editar a resposta antes de enviar para o browser? (y/n)\n");
+
+				scanf("%c", &yn);
+				getchar();
+				yn = tolower(yn);
+				if(yn == 'y' || yn == 's'){
+					system("nano files/reply.txt");
+				}
+
 				if((freply = fopen("files/reply.txt", "w")) == NULL)
 					error("Erro ao criar arquivos files/reply.txt");
 
-				// // captura o tamanho do arquivo em bytes
-				// fseek(freply, 0L, SEEK_END);
-				// numbytes = ftell(frequest);
-				// // reposiciona no início do arquivo
-				// fseek(freply, 0L, SEEK_SET);
-				// // aloca memória
-				// reply = (char*)calloc(numbytes, sizeof(char));
-				// if(reply == NULL) error("Erro ao alocar memória");
-				//
-				// /* copy all the text into the buffer */
-				// fread(reply, sizeof(char), numbytes, freply);
-				// fclose(freply);
-
-				while(!EOF){
-
+				while(fread(&buffer, 1, sizeof(buffer), freply) == sizeof(buffer) ){
+					send(newsock, buffer, sizeof(buffer), 0);
 				}
-
-				if (write(newsock,reply,strlen(reply)) < 0)
-					error("Erro ao escrever no socket");
+				fclose(freply);
 
 				break;
 			case '2':
@@ -185,8 +179,6 @@ int main(int argc, char *argv[])
 			default:
 				printf("Opção inválida\n");
 		}
-
-		printf("\n-------------------------------------------------\n");
 		close(newsock);
 	}
 
