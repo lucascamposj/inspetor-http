@@ -72,7 +72,7 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
       AddVisitedList(&visitedListHead, newLink);  // Adiciona link nos visitados
       RemoveTmp();
       CreateTmp();
-      printf("\nBaixando: %s\n", newLink);
+      
       get_server_response(hostname, newLink); // (pede um novo arquivo do 'tmp' com o newLink)
 
       if (isDump == 1)
