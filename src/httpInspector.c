@@ -20,6 +20,7 @@ Lucas Campos Jorge - mat. 15/0154135
 		#include <arpa/inet.h>
     #include <unistd.h>
 		#include<netdb.h>
+		#include <netinet/tcp.h>
 #endif
 
 #ifndef _Proxy_library
@@ -42,7 +43,7 @@ Lucas Campos Jorge - mat. 15/0154135
 
 void topMenu(){
 	printf("-------------------------------------------------------\n");
-	printf("                   HTTTP INSPECTOR                     \n");
+	printf("                   HTTP INSPECTOR                      \n");
 	printf("-------------------------------------------------------\n");
 }
 
@@ -78,7 +79,7 @@ int main(int argc, char *argv[])
 	struct sockaddr_in proxy_address, client_address;
 	FILE *frequest, *freply, *fcache;
 	char yn;
-	int cached = 0;
+	int cached = 0,on = 1;
 	spiderList **spider;
 
   // Adicionar a leitura do argumento passado pelo terminal
@@ -91,6 +92,7 @@ int main(int argc, char *argv[])
 
 	// criando socket para receber requisição do browser
 	sock = socket(AF_INET, SOCK_STREAM, 0);
+
 	if (sock < 0)
 		error("ERROR opening socket");
 
@@ -103,7 +105,7 @@ int main(int argc, char *argv[])
 	if (bind(sock, (struct sockaddr *) &proxy_address, sizeof(proxy_address)) < 0)
 		error("ERROR on binding");
 
-	listen(sock,5);
+	listen(sock, 10);
 	clilen = sizeof(client_address);
 
 	printf("Aguardando browser...\n");
@@ -111,13 +113,12 @@ int main(int argc, char *argv[])
   while(1)
   {
 		// libera o socket utiliza outro para lidar com o pedido
-		newsock = accept(sock,(struct sockaddr *) &client_address, &clilen);
+		sock = accept(sock,(struct sockaddr *) &client_address, &clilen);
     if (newsock < 0) error("Erro ao aceitar");
-		else close(sock);
 
 		bzero(request,sizeof(request));
 
-    n = read(newsock, request, sizeof(request)-1);
+    n = read(sock, request, sizeof(request));
     if(n < 0) error("Erro ao ler o socket");
 		strcat(request,buffer);
 
@@ -153,6 +154,7 @@ int main(int argc, char *argv[])
 		switch (choice) {
 			case '1':
 				send_request();
+				printf("\n---------------------------------------------------------------\n", );
 
 				printf("Deseja editar a resposta antes de enviar para o browser? (y/n)\n");
 
@@ -163,12 +165,14 @@ int main(int argc, char *argv[])
 					system("nano files/reply.txt");
 				}
 
-				if((freply = fopen("files/reply.txt", "w")) == NULL)
+				if((freply = fopen("files/reply.txt", "r")) == NULL)
 					error("Erro ao criar arquivos files/reply.txt");
 
-				while(fread(&buffer, 1, sizeof(buffer), freply) == sizeof(buffer) ){
-					send(newsock, buffer, sizeof(buffer), 0);
+				while(fread(buffer, 1, sizeof(buffer), freply) == sizeof(buffer)){
+					send(sock, buffer, sizeof(buffer), 0);
 				}
+				shutdown(sock, SHUT_RDWR);
+
 				fclose(freply);
 
 				break;
@@ -178,8 +182,8 @@ int main(int argc, char *argv[])
 				printf("%d\n", sizeof(request));
 
 				printf("Request: \n%s\n", request);
-				GetLinkFromHeader(link, 500, request, 1000);
-				GetHostFromHeader(hostname, 500, request, 1000);
+				GetLinkFromHeader(request, sizeof(request), link, sizeof(link));
+				GetHostFromHeader(request, sizeof(request), hostname, sizeof(hostname));
 				printf("link: %s", link);
 				printf("host: %s", hostname);
 
@@ -189,8 +193,8 @@ int main(int argc, char *argv[])
 
 				break;
 			case '3':
-				GetLinkFromHeader(link, sizeof(link), request, sizeof(request));
-				GetHostFromHeader(hostname, sizeof(hostname), request, sizeof(request));
+				GetLinkFromHeader(request, sizeof(request), link, sizeof(link));
+				GetHostFromHeader(request, sizeof(request), hostname, sizeof(hostname));
 
 				Spider(link, hostname, 1, spider);
 				DeleteSpiderList(spider);
@@ -199,7 +203,7 @@ int main(int argc, char *argv[])
 			default:
 				printf("Opção inválida\n");
 		}
-		close(newsock);
+
 	}
 
 	close(sock);

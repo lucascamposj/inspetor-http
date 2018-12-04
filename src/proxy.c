@@ -50,12 +50,10 @@ int get_ip(char hostname[], char *ip){
 		return -1;
 	}
 
-	//Cast the h_addr_list to in_addr , since h_addr_list also has the ip address in long format only
 	addr_list = (struct in_addr **) he->h_addr_list;
 
 	for(i = 0; addr_list[i] != NULL; i++)
 	{
-		//Return the first one;
 		strcpy(ip , inet_ntoa(*addr_list[i]) );
 	}
 
@@ -196,13 +194,9 @@ int send_request(){
 	request = (char*)calloc(numbytes, sizeof(char));
 	if(request == NULL) error("Erro ao alocar memória");
 
-	/* copy all the text into the buffer */
+	// copia texto para o buffer
 	fread(request, sizeof(char), numbytes, frequest);
 	fclose(frequest);
-
-	/* confirm we have read the file by
-	outputing it to the console */
-	printf("The file called test.dat contains this text\n\n%s", request);
 
 	GetHostFromHeader(request, strlen(request), hostname, sizeof(hostname)-1);
 
