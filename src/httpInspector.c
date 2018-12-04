@@ -180,8 +180,8 @@ int main(int argc, char *argv[])
 				break;
 			case '2':
 				printf("Request: \n%s\n", request);
-        GetLinkFromHeader(request, 1000, link, 500);
-        GetHostFromHeader(request, 1000, hostname, 500);
+        GetLinkFromHeader(request, sizeof(request), link, sizeof(link));
+        GetHostFromHeader(request, sizeof(request), hostname, sizeof(request));
 				printf("link: %s", link);
 				printf("host: %s", hostname);
 
@@ -191,8 +191,8 @@ int main(int argc, char *argv[])
 
 				break;
 			case '3':
-        GetLinkFromHeader(request, 1000, link, 500);
-        GetHostFromHeader(request, 1000, hostname, 500);
+        GetLinkFromHeader(request, sizeof(request), link, sizeof(link));
+        GetHostFromHeader(request, sizeof(request), hostname, sizeof(request));
 				Spider(link, hostname, 1, &spider);
 				DeleteSpiderList(&spider);
 
