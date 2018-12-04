@@ -64,16 +64,13 @@ char menu(){
 int main(int argc, char *argv[])
 {
   int proxy_port = 0;
-  int sock, newsock, pid;
+  int sock, newsock;
 	struct hostent *server;
   int n, numbytes;
   char buffer[1000];
 	char request[1000];
 	char link[500];
-	int connection_status;
 	char ip[100], hostname[500], *reply;
-	char request_test[] = "GET / HTTP/1.1\r\nHost: flaviomoura.mat.br/\r\n\r\n";
-	int biding_status;
 	char choice;
 	socklen_t clilen;
 	struct sockaddr_in proxy_address, client_address;
@@ -112,8 +109,7 @@ int main(int argc, char *argv[])
 
 	printf("Aguardando browser...\n");
 
-  while(1)
-  {
+  // while(1){
 		// libera o socket utiliza outro para lidar com o pedido
 		sock = accept(sock,(struct sockaddr *) &client_address, &clilen);
     if (newsock < 0) error("Erro ao aceitar");
@@ -131,14 +127,23 @@ int main(int argc, char *argv[])
 		fprintf(frequest, "%s", request);
 		fclose(frequest);
 
-		if(cached){
+		GetLinkFromHeader(request, sizeof(request), link, sizeof(link));
+
+		if((fcache = GetHttpFromCache(link)) != NULL){
+			printf("[PROXY] Pedido encontrado na cache\n");
 			printf("Deseja retorna o arquivo da cache para o browser?\n");
 			scanf("%c", &yn);
 			getchar();
 			yn = tolower(yn);
 			if(yn == 'y' || yn == 's'){
-				// retorna o arquivo
-				printf("retorna arquivo\n");
+				send(sock, "HTTP/1.0 200 OK\r\n\r\n", 19, 0);
+				printf("%d",sizeof(buffer));
+				while(fread(buffer, 1, sizeof(buffer), fcache) == sizeof(buffer)){
+					send(sock, buffer, sizeof(buffer), 0);
+				}
+				shutdown(sock, SHUT_RDWR);
+				fclose(fcache);
+				exit(0);
 			}
 		}
 
@@ -156,9 +161,9 @@ int main(int argc, char *argv[])
 		switch (choice) {
 			case '1':
 				send_request();
-				printf("\n---------------------------------------------------------------\n", );
+				printf("\n\n");
 
-				printf("Deseja editar a resposta antes de enviar para o browser? (y/n)\n");
+				printf("Deseja editar a resposta antes de enviar para o browser(y/n)?: ");
 
 				scanf("%c", &yn);
 				getchar();
@@ -182,17 +187,17 @@ int main(int argc, char *argv[])
 				printf("Request: \n%s\n", request);
         GetLinkFromHeader(request, sizeof(request), link, sizeof(link));
         GetHostFromHeader(request, sizeof(request), hostname, sizeof(request));
-				printf("link: %s", link);
-				printf("host: %s", hostname);
 
+				printf("\n\n");
 				Spider(link, hostname, 0, &spider);
 				PrintSpider(spider, NULL, 0);
+				printf("\n\n");
 				DeleteSpiderList(&spider);
 
 				break;
 			case '3':
         GetLinkFromHeader(request, sizeof(request), link, sizeof(link));
-        GetHostFromHeader(request, sizeof(request), hostname, sizeof(request));
+        GetHostFromHeader(request, sizeof(request), hostname, sizeof(hostname));
 				Spider(link, hostname, 1, &spider);
 				DeleteSpiderList(&spider);
 
@@ -200,10 +205,8 @@ int main(int argc, char *argv[])
 			default:
 				printf("Opção inválida\n");
 		}
-
-	}
-
-	close(sock);
+		close(sock);
+	// }
 
   return 0;
 }
