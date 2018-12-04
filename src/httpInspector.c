@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
   int n, numbytes;
   char buffer[1000];
 	char request[1000];
+	char link[500];
 	int connection_status;
 	char ip[100], hostname[500], *reply;
 	char request_test[] = "GET / HTTP/1.1\r\nHost: flaviomoura.mat.br/\r\n\r\n";
@@ -78,6 +79,7 @@ int main(int argc, char *argv[])
 	FILE *frequest, *freply, *fcache;
 	char yn;
 	int cached = 0;
+	spiderList **spider;
 
   // Adicionar a leitura do argumento passado pelo terminal
   if(argc == 2)
@@ -171,10 +173,28 @@ int main(int argc, char *argv[])
 
 				break;
 			case '2':
-				printf("spider()\n");
+				printf("%d\n", sizeof(link));
+				printf("%d\n", sizeof(hostname));
+				printf("%d\n", sizeof(request));
+
+				printf("Request: \n%s\n", request);
+				GetLinkFromHeader(link, 500, request, 1000);
+				GetHostFromHeader(hostname, 500, request, 1000);
+				printf("link: %s", link);
+				printf("host: %s", hostname);
+
+				Spider(link, hostname, 0, spider);
+				PrintSpider(*spider, NULL, 0);
+				DeleteSpiderList(spider);
+
 				break;
 			case '3':
-				printf("dump()");
+				GetLinkFromHeader(link, sizeof(link), request, sizeof(request));
+				GetHostFromHeader(hostname, sizeof(hostname), request, sizeof(request));
+
+				Spider(link, hostname, 1, spider);
+				DeleteSpiderList(spider);
+
 				break;
 			default:
 				printf("Opção inválida\n");
