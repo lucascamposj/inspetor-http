@@ -72,7 +72,7 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
       AddVisitedList(&visitedListHead, newLink);  // Adiciona link nos visitados
       RemoveTmp();
       CreateTmp();
-      
+
       get_server_response(hostname, newLink); // (pede um novo arquivo do 'tmp' com o newLink)
 
       if (isDump == 1)
@@ -152,7 +152,7 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead)
 
             GetHttpMainFather(tmpLink, newLink, 500);
 
-            if (strcmp(fatherLink, newLink) == 0 && StringContains(newLink, '#', StringLenth(newLink)) == 0)
+            if (strcmp(fatherLink, newLink) == 0 && StringContains(tmpLink, '#', StringLenth(tmpLink)) == 0)
             {
               AddSpiderList(spiderListHead, linkToVisit, tmpLink);
             }
