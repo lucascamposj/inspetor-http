@@ -89,10 +89,10 @@ void error(char *msg)
 
 /*
 Função:
-	GetServerResponse: A partir de um Request HTTP busca a resposta do servidor em tmp/server_response
+	GetServerResponse: A partir de um inform busca e armazena a resposta do servidor em tmp/server_response.txt
 Argumentos:
-	http: Ponteiro para string com o request HTTP
-	url: Ponteiro para string com a url
+	hostname: Ponteiro para string com um hostname
+	url: Ponteiro para string com uma url
 */
 
 void get_server_response(char *hostname, char *url)
@@ -168,6 +168,12 @@ void get_server_response(char *hostname, char *url)
 	fclose(file);
 }
 
+/*
+Função:
+	send_request: Envia a requisição HTTP armazenada em files/request.txt para o
+servidor de destino, obtem a reposta e armazena em files/reply.txt
+*/
+
 int send_request(){
 	int ok, n, sock, numbytes;
 	FILE *frequest, *freply;
@@ -189,7 +195,6 @@ int send_request(){
 	// reposiciona no início do arquivo
 	fseek(frequest, 0L, SEEK_SET);
 
-	printf("Numbytes:: %d\n",numbytes );
 	// aloca memória
 	request = (char*)calloc(numbytes, sizeof(char));
 	if(request == NULL) error("Erro ao alocar memória");
@@ -199,8 +204,6 @@ int send_request(){
 	fclose(frequest);
 
 	GetHostFromHeader(request, strlen(request), hostname, sizeof(hostname)-1);
-
-	printf("\n\nHOSTANAME: %s\n", hostname);
 
 	// Criando socket
 	sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -222,9 +225,11 @@ int send_request(){
 	if (connect(sock,(struct sockaddr *)&server_address,sizeof(server_address)) < 0)
 		error("Erro na conexão");
 
+	// Envia a requisição no socket
 	if (write(sock,request,strlen(request)) < 0)
 		error("Erro ao escrever no socket");
 
+	// Armazena toda a resposta do servidor em files/reply.txt
 	while(1){
 		bzero(buffer,sizeof(buffer));
 		n = read(sock,buffer,sizeof(buffer) - 1);
