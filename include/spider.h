@@ -6,14 +6,14 @@ Lucas Campos Jorge - mat. 15/0154135
 
 typedef struct SpiderList
 {
-  char Link[500];
+  char Link[1000];
   int level;
   struct SpiderList *nextLink, *previousLink, *fatherLink;
 } spiderList;
 
 typedef struct VisitedList
 {
-  char Link[500];
+  char Link[1000];
   struct VisitedList *nextLink, *previousLink;
 } visitedList;
 
@@ -27,3 +27,4 @@ void DeleteVisitedList(visitedList **);
 void PrintSpider(spiderList *, spiderList *, int);
 void SaveToFileSpider(FILE *, spiderList *, spiderList *, int);
 void PrintVisited(visitedList *);
+int downloadAndAnaliseLink(char *, int);

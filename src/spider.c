@@ -39,26 +39,26 @@ Lucas Campos Jorge - mat. 15/0154135
 
 void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead, int threshold)
 {
-  char newLink[500], tmpLink[500], txtLine[500], fatherLink[500], *j, *ptr;
+  char newLink[1000], tmpLink[1000], txtLine[1000], fatherLink[1000], *j, *ptr;
   int i = 0, w, k, txtItem, fatherLinkSize;
   spiderList *linkToVisit;
   visitedList *visitedListHead;
   FILE *tmpFile;
 
   // Zera todas as strings no inicio
-  ClearString(newLink, 500);
-  ClearString(tmpLink, 500);
-  ClearString(txtLine, 500);
-  ClearString(fatherLink, 500);
+  ClearString(newLink, 1000);
+  ClearString(tmpLink, 1000);
+  ClearString(txtLine, 1000);
+  ClearString(fatherLink, 1000);
 
   AddSpiderList(spiderListHead, NULL, link);
   visitedListHead = NULL;
   linkToVisit = *spiderListHead;
-  GetHttpMainFather(link, fatherLink, 500);
+  GetHttpMainFather(link, fatherLink, 1000);
 
-  if (StringContainsAtEnd(fatherLink, '/', 500) == 1)
+  if (StringContainsAtEnd(fatherLink, '/', 1000) == 1)
   {
-    RemoveChar('/', fatherLink, 500, 1);
+    RemoveChar('/', fatherLink, 1000, 1);
   }
 
   fatherLinkSize = StringLenth(fatherLink);
@@ -69,7 +69,7 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead,
   {
     if (linkToVisit->level < threshold || threshold == -1)
     {
-      if (VisitedListContains(visitedListHead, newLink) == 0 && StringContains(newLink, '#', StringLenth(newLink)) == 0)
+      if (VisitedListContains(visitedListHead, newLink) == 0 && StringContains(newLink, '#', StringLenth(newLink)) == 0 && downloadAndAnaliseLink(newLink, isDump) == 1)
       {
         AddVisitedList(&visitedListHead, newLink);  // Adiciona link nos visitados
         RemoveTmp();
@@ -87,15 +87,15 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead,
 
         tmpFile = OpenDataFile("./tmp/server_response.txt");
 
-        ClearString(txtLine, 500);
-        ClearString(tmpLink, 500);
+        ClearString(txtLine, 1000);
+        ClearString(tmpLink, 1000);
 
         while ((txtItem = (char) fgetc(tmpFile)) != EOF)
         {
           txtLine[i] = txtItem;
           i++;
 
-          if (txtItem == '\n' || i > 498)
+          if (txtItem == '\n' || i > 998)
           {
             i = 0;
             ptr = strstr(txtLine, "href=\"");
@@ -104,21 +104,21 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead,
             {
               ptr = strstr(txtLine, "src=\"");
 
-              if(ptr != NULL && ptr < (&txtLine[500] - 5))
+              if(ptr != NULL && ptr < (&txtLine[1000] - 5))
               {
                 j = ptr + 5;
               }
             }
             else
             {
-              if (ptr < (&txtLine[500] - 5))
+              if (ptr < (&txtLine[1000] - 5))
                 j = ptr + 6;
             }
 
             if (ptr != NULL)
             {
               w = 0;
-              while (*j != '"' && *j != '?' && w < 500 && j < &txtLine[500])
+              while (*j != '"' && *j != '?' && w < 1000 && j < &txtLine[1000])
               {
                 if(*j != 0x20 && *j != '\r' && *j != 0x09)
                 {
@@ -129,16 +129,18 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead,
                 w++;
               }
 
+              ClearString(txtLine, 1000);
+
               if ((tmpLink[0] == '/' || LinkHasHttpOrHttps(tmpLink) == 0) && LinkHasMailTo(tmpLink) == 0)
               {
-                RemoveChar('/', tmpLink, 500, 0); // Remove a '/' do inicio e final da string, se tiver.
+                RemoveChar('/', tmpLink, 1000, 0); // Remove a '/' do inicio e final da string, se tiver.
 
                 for (k = 0; k < fatherLinkSize; k++)
                   newLink[k] = fatherLink[k];
 
                 newLink[fatherLinkSize] = '/';
 
-                for (k = 1; k < 500; k++)
+                for (k = 1; k < 1000; k++)
                 {
                   newLink[k + fatherLinkSize] = tmpLink[k-1];
 
@@ -146,7 +148,7 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead,
                     break;
                 }
 
-                for (int k = 0; k < 500; k++)
+                for (int k = 0; k < 1000; k++)
                 {
                   tmpLink[k] = newLink[k];
 
@@ -155,7 +157,7 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead,
                 }
               }
 
-              GetHttpMainFather(tmpLink, newLink, 500);
+              GetHttpMainFather(tmpLink, newLink, 1000);
 
               if (strcmp(fatherLink, newLink) == 0 && StringContains(tmpLink, '#', StringLenth(tmpLink)) == 0)
               {
@@ -163,8 +165,8 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead,
               }
             }
 
-            ClearString(txtLine, 500);
-            ClearString(tmpLink, 500);
+            ClearString(txtLine, 1000);
+            ClearString(tmpLink, 1000);
           }
         }
 
@@ -172,9 +174,9 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead,
       }
     }
 
-    ClearString(newLink, 500);
-    ClearString(txtLine, 500);
-    ClearString(tmpLink, 500);
+    ClearString(newLink, 1000);
+    ClearString(txtLine, 1000);
+    ClearString(tmpLink, 1000);
 
     linkToVisit = linkToVisit->nextLink;
 
@@ -257,7 +259,7 @@ void AddSpiderList(spiderList **spiderListHead, spiderList *fatherLink, char *li
     contentCreator->level = fatherLink->level + 1;
 	}
 
-  ClearString(contentCreator->Link, 500);
+  ClearString(contentCreator->Link, 1000);
 	strcpy(contentCreator->Link, link);
   contentCreator->fatherLink = fatherLink;
 }
@@ -312,7 +314,7 @@ void AddVisitedList(visitedList **visitedListHead, char *link)
 		contentCreator->nextLink = NULL;
 	}
 
-  ClearString(contentCreator->Link, 500);
+  ClearString(contentCreator->Link, 1000);
 	strcpy(contentCreator->Link, link);
 }
 
@@ -336,4 +338,24 @@ void PrintVisited(visitedList *visitedListHead)
     printf("%s\n", visitedListHead->Link);
     visitedListHead = visitedListHead->nextLink;
   }
+}
+
+int downloadAndAnaliseLink(char *link, int isDump)
+{
+  char name[100], *ptr;
+
+  if (isDump == 0)
+  {
+    GetHttpFileName(link, name, 100);
+
+    if (name != '\0' && StringContains(name, '.', 100) >= 1)
+    {
+      ptr = strstr(name, ".html");
+
+      if (ptr == NULL)
+        return 0;
+    }
+  }
+
+  return 1;
 }
