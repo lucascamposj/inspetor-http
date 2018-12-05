@@ -105,8 +105,6 @@ void get_server_response(char *hostname, char *url)
   char isEnd[50];
 	FILE* file;
 
-  ClearString(isEnd, 50);
-
 	file = fopen("./tmp/server_response.txt","w");
 	if(file == NULL)
 		error("Erro ao abrir o arquivo");
@@ -124,7 +122,7 @@ void get_server_response(char *hostname, char *url)
 
 	strcat(http_request,"GET ");
 	strcat(http_request,path);
-	strcat(http_request," HTTP/1.1\r\nHost: ");
+	strcat(http_request," HTTP/1.0\r\nHost: ");
 	strcat(http_request,hostname);
 	strcat(http_request,"\r\n\r\n");
 

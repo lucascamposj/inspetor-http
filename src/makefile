@@ -23,7 +23,7 @@ aracne: $(OBJ)
 	gcc -std=c99  -o $@ $^ $(CFLAGS) $(LIBS)
 
 clearscreen:
-	clear
+	tput reset
 
 .PHONY: clean
 

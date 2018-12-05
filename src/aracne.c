@@ -50,14 +50,21 @@ void topMenu(){
 char menu(){
 	char c;
 
+  // Limpa a tela
+  system("tput reset");
+
 	printf("\n------------------------ MENU -------------------------\n");
 	printf("1) Enviar request\n");
 	printf("2) Imprimir Spider\n");
 	printf("3) Realizar Dump \n");
+  printf("4) Drop package \n");
 	printf("Digite a funcionalidade desejada: ");
 
 	scanf("%c", &c);
 	getchar();
+
+  // Limpa a tela
+  system("tput reset");
 
 	return c;
 }
@@ -67,18 +74,23 @@ int main(int argc, char *argv[])
   int proxy_port = 0;
   int sock, newsock;
 	struct hostent *server;
-  int n, numbytes, tr = 1;
-  char buffer[1000];
-	char request[1000];
+  int n, numbytes, tr = 1, spiderLevel;
+  char buffer[5000];
+	char request[5000];
 	char link[500];
+  char junk[50];
+  char spiderFileName[150], tmpLinkName[150];
 	char ip[100], hostname[500], *reply;
 	char choice;
 	socklen_t clilen;
 	struct sockaddr_in proxy_address, client_address;
-	FILE *frequest, *freply, *fcache;
+	FILE *frequest, *freply, *fcache, *spiderFile;
 	char yn;
 	int cached = 0;
 	spiderList *spider;
+
+  // Limpa a tela
+  system("tput reset");
 
   // Adicionar a leitura do argumento passado pelo terminal
   if(argc == 3)
@@ -93,7 +105,8 @@ int main(int argc, char *argv[])
 
 	printf("Porta escolhida: %d\n", proxy_port);
 
-  while(1){
+  while(1)
+  {
 
     topMenu(); //imprime nome do programa
 
@@ -129,11 +142,13 @@ int main(int argc, char *argv[])
 
     close(sock);
 
+    // Limpa a tela
+    system("tput reset");
+
 		bzero(request,sizeof(request));
 
     n = read(newsock, request, sizeof(request));
     if(n < 0) error("Erro ao ler o socket");
-		strcat(request,buffer);
 
 		if((frequest = fopen("files/request.txt", "w")) == NULL)
 			error("Erro ao criar arquivos files/request.txt");
@@ -144,24 +159,55 @@ int main(int argc, char *argv[])
 
 		GetLinkFromHeader(request, sizeof(request), link, sizeof(link));
 
-		if((fcache = GetHttpFromCache(link)) != NULL){
-			printf("\n[PROXY] Pedido encontrado na cache\n");
+    // Seção dropping packages inuteis:
+    GetFromText("CONNECT", 1, ':', request, sizeof(request), junk, 50);
+
+    // Verifica se é o lixo do mozilla, se for descarta.
+    if (strcmp("push.services.mozilla.com", junk) == 0)
+    {
+      // Limpa a tela
+      system("tput reset");
+
+      close(newsock);
+      continue;
+    }
+
+    // Drop no request do site 'http://ocsp.digicert.com/'
+    if (strcmp(link, "http://ocsp.digicert.com/") == 0)
+    {
+      // Limpa a tela
+      system("tput reset");
+
+      close(newsock);
+      continue;
+    }
+
+		if((fcache = GetHttpFromCache(link)) != NULL)
+    {
+			printf("\n\n[PROXY] Pedido encontrado na cache\n");
 			printf("Deseja retorna o arquivo da cache para o browser?\n");
 			scanf("%c", &yn);
 			getchar();
 			yn = tolower(yn);
-			if(yn == 'y' || yn == 's'){
+
+			if(yn == 'y' || yn == 's')
+      {
+        ClearString(buffer, sizeof(buffer));
+
 				send(newsock, "HTTP/1.0 200 OK\r\n\r\n", 19, 0);
-				while(fread(buffer, 1, sizeof(buffer), fcache) == sizeof(buffer)){
+
+				while(fread(buffer, 1, sizeof(buffer), fcache) == sizeof(buffer))
+        {
 					send(newsock, buffer, sizeof(buffer), 0);
 				}
+
 				shutdown(newsock, SHUT_RDWR);
 				fclose(fcache);
 				continue;
 			}
 		}
 
-		printf("\nDeseja editar o pedido antes de enviar para o servidor? (y/n): ");
+		printf("\n\nDeseja editar o pedido antes de enviar para o servidor? (y/n): ");
 
 		scanf("%c", &yn);
 		getchar();
@@ -177,7 +223,7 @@ int main(int argc, char *argv[])
 				send_request();
 				printf("\n\n");
 
-				printf("\nDeseja editar a resposta antes de enviar para o browser? (y/n): ");
+				printf("\n\nDeseja editar a resposta antes de enviar para o browser? (y/n): ");
 
 				scanf("%c", &yn);
 				getchar();
@@ -189,24 +235,65 @@ int main(int argc, char *argv[])
 				if((freply = fopen("files/reply.txt", "r")) == NULL)
 					error("Erro ao criar arquivos files/reply.txt");
 
+        ClearString(buffer, sizeof(buffer));
+
 				while(fread(buffer, 1, sizeof(buffer), freply) == sizeof(buffer)){
 					send(newsock, buffer, sizeof(buffer), 0);
 				}
 				shutdown(newsock, SHUT_RDWR);
 
 				fclose(freply);
-
 				break;
+
 			case '2':
         spider = NULL;
 				printf("\nSPIDER:\n");
         GetLinkFromHeader(request, sizeof(request), link, sizeof(link));
         GetHostFromHeader(request, sizeof(request), hostname, sizeof(hostname));
 
-				Spider(link, hostname, 0, &spider);
+        printf("\nDigite a quantidade de níveis desejada no spider (-1 para ilimitado): ");
+
+        scanf("%d", &spiderLevel);
+      	getchar();
+
+				Spider(link, hostname, 0, &spider, spiderLevel);
+        system("mkdir -p ./files/spider");
+        ClearString(spiderFileName, 150);
+        ClearString(tmpLinkName, 150);
+        GetHttpMainFather(link, spiderFileName, 150);
+        GetLinkWithoutHttp(spiderFileName, tmpLinkName, 150);
+        ClearString(spiderFileName, 150);
+        RemoveChar('/', tmpLinkName, 150, 0);
+        strcpy(spiderFileName, "./files/spider/");
+        strcat(spiderFileName, tmpLinkName);
+        strcat(spiderFileName, ".txt");
+        spiderFile = CreateDataFile(spiderFileName);
+        SaveToFileSpider(spiderFile, spider, NULL, 0);
+        fclose(spiderFile);
+
 				printf("\n\n");
-				PrintSpider(spider, NULL, 0);
-				DeleteSpiderList(&spider);
+        printf("\nSpider finalizado!\n");
+        printf("\nArquivo salvo em %s\n\n", spiderFileName);
+        printf("Deseja imprimir o spider no terminal? ");
+
+        scanf("%c", &yn);
+    		getchar();
+    		yn = tolower(yn);
+
+    		if(yn == 'y' || yn == 's')
+        {
+          // Limpa a tela
+          system("tput reset");
+          
+          PrintSpider(spider, NULL, 0);
+          printf("\nDigite 'enter' para continuar...");
+          getchar();
+    		}
+
+        DeleteSpiderList(&spider);
+
+        // Limpa a tela
+        system("tput reset");
 
 				break;
 			case '3':
@@ -214,15 +301,24 @@ int main(int argc, char *argv[])
 				printf("\nDUMP:\n");
         GetLinkFromHeader(request, sizeof(request), link, sizeof(link));
         GetHostFromHeader(request, sizeof(request), hostname, sizeof(hostname));
-				Spider(link, hostname, 1, &spider);
+				Spider(link, hostname, 1, &spider, -1);
 				DeleteSpiderList(&spider);
 
 				break;
+
+      case '4':
+        close(newsock);
+        continue;
+				break;
+
 			default:
 				printf("Opção inválida\n");
 		}
+
     close(newsock);
-    bzero(request,sizeof(request));
+
+    // Limpa a tela
+    system("tput reset");
 	 }
 
   return 0;
