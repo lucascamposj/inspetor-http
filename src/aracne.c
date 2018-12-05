@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
   int proxy_port = 0;
   int sock, newsock;
 	struct hostent *server;
-  int n, numbytes;
+  int n, numbytes, tr = 1;
   char buffer[1000];
 	char request[1000];
 	char link[500];
@@ -79,8 +79,6 @@ int main(int argc, char *argv[])
 	char yn;
 	int cached = 0;
 	spiderList *spider;
-
-  spider = NULL;
 
   // Adicionar a leitura do argumento passado pelo terminal
   if(argc == 3)
@@ -95,36 +93,45 @@ int main(int argc, char *argv[])
 
 	printf("Porta escolhida: %d\n", proxy_port);
 
-	topMenu(); //imprime nome do programa
+  while(1){
 
-	// criando socket para receber requisição do browser
-	sock = socket(AF_INET, SOCK_STREAM, 0);
+    topMenu(); //imprime nome do programa
 
-	if (sock < 0)
-		error("ERROR opening socket");
+  	// criando socket para receber requisição do browser
+  	sock = socket(AF_INET, SOCK_STREAM, 0);
 
-	bzero((char *) &proxy_address, sizeof(proxy_address));
+  	if (sock < 0)
+  		error("ERROR opening socket");
 
-	proxy_address.sin_family = AF_INET;
-	proxy_address.sin_addr.s_addr = INADDR_ANY;
-	proxy_address.sin_port = htons(proxy_port);
+  	bzero((char *) &proxy_address, sizeof(proxy_address));
 
-	if (bind(sock, (struct sockaddr *) &proxy_address, sizeof(proxy_address)) < 0)
-		error("ERROR on binding");
+  	proxy_address.sin_family = AF_INET;
+  	proxy_address.sin_addr.s_addr = inet_addr("127.0.0.1");
+  	proxy_address.sin_port = htons(proxy_port);
 
-	listen(sock, 10);
-	clilen = sizeof(client_address);
+    // Remove o uso do socket (para evitar erros de bind)
+    if (setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,&tr,sizeof(int)) == -1) {
+        perror("setsockopt");
+        exit(1);
+    }
 
-	printf("Aguardando browser...\n\n");
+  	if (bind(sock, (struct sockaddr *) &proxy_address, sizeof(proxy_address)) < 0)
+  		error("ERROR on binding");
 
-  // while(1){
+    listen(sock, 10);
+   	clilen = sizeof(client_address);
+
+   	printf("Aguardando browser...\n\n");
+
 		// libera o socket utiliza outro para lidar com o pedido
-		sock = accept(sock,(struct sockaddr *) &client_address, &clilen);
-    if (sock < 0) error("Erro ao aceitar");
+		newsock = accept(sock,(struct sockaddr *) &client_address, &clilen);
+    if (newsock < 0) error("Erro ao aceitar");
+
+    close(sock);
 
 		bzero(request,sizeof(request));
 
-    n = read(sock, request, sizeof(request));
+    n = read(newsock, request, sizeof(request));
     if(n < 0) error("Erro ao ler o socket");
 		strcat(request,buffer);
 
@@ -138,23 +145,23 @@ int main(int argc, char *argv[])
 		GetLinkFromHeader(request, sizeof(request), link, sizeof(link));
 
 		if((fcache = GetHttpFromCache(link)) != NULL){
-			printf("[PROXY] Pedido encontrado na cache\n");
+			printf("\n[PROXY] Pedido encontrado na cache\n");
 			printf("Deseja retorna o arquivo da cache para o browser?\n");
 			scanf("%c", &yn);
 			getchar();
 			yn = tolower(yn);
 			if(yn == 'y' || yn == 's'){
-				send(sock, "HTTP/1.0 200 OK\r\n\r\n", 19, 0);
+				send(newsock, "HTTP/1.0 200 OK\r\n\r\n", 19, 0);
 				while(fread(buffer, 1, sizeof(buffer), fcache) == sizeof(buffer)){
-					send(sock, buffer, sizeof(buffer), 0);
+					send(newsock, buffer, sizeof(buffer), 0);
 				}
-				shutdown(sock, SHUT_RDWR);
+				shutdown(newsock, SHUT_RDWR);
 				fclose(fcache);
-				exit(0);
+				continue;
 			}
 		}
 
-		printf("Deseja editar o pedido antes de enviar para o servidor? (y/n): ");
+		printf("\nDeseja editar o pedido antes de enviar para o servidor? (y/n): ");
 
 		scanf("%c", &yn);
 		getchar();
@@ -170,7 +177,7 @@ int main(int argc, char *argv[])
 				send_request();
 				printf("\n\n");
 
-				printf("Deseja editar a resposta antes de enviar para o browser? (y/n): ");
+				printf("\nDeseja editar a resposta antes de enviar para o browser? (y/n): ");
 
 				scanf("%c", &yn);
 				getchar();
@@ -183,14 +190,15 @@ int main(int argc, char *argv[])
 					error("Erro ao criar arquivos files/reply.txt");
 
 				while(fread(buffer, 1, sizeof(buffer), freply) == sizeof(buffer)){
-					send(sock, buffer, sizeof(buffer), 0);
+					send(newsock, buffer, sizeof(buffer), 0);
 				}
-				shutdown(sock, SHUT_RDWR);
+				shutdown(newsock, SHUT_RDWR);
 
 				fclose(freply);
 
 				break;
 			case '2':
+        spider = NULL;
 				printf("\nSPIDER:\n");
         GetLinkFromHeader(request, sizeof(request), link, sizeof(link));
         GetHostFromHeader(request, sizeof(request), hostname, sizeof(hostname));
@@ -202,6 +210,7 @@ int main(int argc, char *argv[])
 
 				break;
 			case '3':
+        spider = NULL;
 				printf("\nDUMP:\n");
         GetLinkFromHeader(request, sizeof(request), link, sizeof(link));
         GetHostFromHeader(request, sizeof(request), hostname, sizeof(hostname));
@@ -212,8 +221,9 @@ int main(int argc, char *argv[])
 			default:
 				printf("Opção inválida\n");
 		}
-		//close(sock);
-	// }
+    close(newsock);
+    bzero(request,sizeof(request));
+	 }
 
   return 0;
 }

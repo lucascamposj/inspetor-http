@@ -102,7 +102,10 @@ void get_server_response(char *hostname, char *url)
 	char path[500];
 	char name[500];
 	char buffer[5000];
+  char isEnd[50];
 	FILE* file;
+
+  ClearString(isEnd, 50);
 
 	file = fopen("./tmp/server_response.txt","w");
 	if(file == NULL)
@@ -160,6 +163,10 @@ void get_server_response(char *hostname, char *url)
 		if(n > 0){
 	  	// printf("%s",buffer);
 			fprintf(file, "%s", buffer);
+      GetFromText("</html>", 0, '>', buffer, 5000, isEnd, 50);
+
+      if (isEnd[0] != '\0')
+        break;
 		}
 		if(n == 0) break;
 	}
@@ -177,7 +184,7 @@ servidor de destino, obtem a reposta e armazena em files/reply.txt
 int send_request(){
 	int ok, n, sock, numbytes;
 	FILE *frequest, *freply;
-	char *request, buffer[5000], hostname[500];
+	char *request, buffer[5000], hostname[500], isEnd[50];
 	int port = 80;
 	struct sockaddr_in server_address;
 	struct hostent *server;
@@ -239,6 +246,11 @@ int send_request(){
 		if(n > 0){
 			printf("%s",buffer);
 			fprintf(freply, "%s", buffer);
+
+      GetFromText("</html>", 0, '>', buffer, 5000, isEnd, 50);
+
+      if (isEnd[0] != '\0')
+        break;
 		}
 		if(n == 0) break;
 	}
