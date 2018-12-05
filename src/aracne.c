@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
 		if((fcache = GetHttpFromCache(link)) != NULL)
     {
 			printf("\n\n[PROXY] Pedido encontrado na cache\n");
-			printf("Deseja retorna o arquivo da cache para o browser?\n");
+			printf("Deseja retorna o arquivo da cache para o browser? ");
 			scanf("%c", &yn);
 			getchar();
 			yn = tolower(yn);

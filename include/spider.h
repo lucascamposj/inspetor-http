@@ -6,14 +6,14 @@ Lucas Campos Jorge - mat. 15/0154135
 
 typedef struct SpiderList
 {
-  char Link[1000];
+  char Link[5000];
   int level;
   struct SpiderList *nextLink, *previousLink, *fatherLink;
 } spiderList;
 
 typedef struct VisitedList
 {
-  char Link[1000];
+  char Link[5000];
   struct VisitedList *nextLink, *previousLink;
 } visitedList;
 
