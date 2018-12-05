@@ -51,7 +51,7 @@ char menu(){
 	char c;
 
   // Limpa a tela
-  system("tput reset");
+  system("clear");
 
 	printf("\n------------------------ MENU -------------------------\n");
 	printf("1) Enviar request\n");
@@ -64,7 +64,7 @@ char menu(){
 	getchar();
 
   // Limpa a tela
-  system("tput reset");
+  system("clear");
 
 	return c;
 }
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
 	spiderList *spider;
 
   // Limpa a tela
-  system("tput reset");
+  system("clear");
 
   // Adicionar a leitura do argumento passado pelo terminal
   if(argc == 3)
@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
     close(sock);
 
     // Limpa a tela
-    system("tput reset");
+    system("clear");
 
     // Criando o diretório
     system("mkdir -p ./files/proxy");
@@ -155,8 +155,6 @@ int main(int argc, char *argv[])
 
 		if((frequest = fopen("files/proxy/request.txt", "w")) == NULL)
 			error("Erro ao criar arquivos files/proxy/request.txt");
-		printf("Request do browser:\n\n");
-		printf("%s",request);
 		fprintf(frequest, "%s", request);
 		fclose(frequest);
 
@@ -169,7 +167,7 @@ int main(int argc, char *argv[])
     if (strcmp("push.services.mozilla.com", junk) == 0)
     {
       // Limpa a tela
-      system("tput reset");
+      system("clear");
 
       close(newsock);
       continue;
@@ -179,11 +177,15 @@ int main(int argc, char *argv[])
     if (strstr(link, "ocsp.") != NULL)
     {
       // Limpa a tela
-      system("tput reset");
+      system("clear");
 
       close(newsock);
       continue;
     }
+
+    // Impressão do request
+    printf("Request do browser:\n\n");
+		printf("%s",request);
 
 		if((fcache = GetHttpFromCache(link)) != NULL)
     {
@@ -235,7 +237,7 @@ int main(int argc, char *argv[])
 					system("nano files/proxy/reply.txt");
 				}
 
-				if((freply = fopen("files/proxy/reply.txt", "r")) == NULL)
+				if((freply = fopen("files/proxy/reply.txt", "rb")) == NULL)
 					error("Erro ao criar arquivos files/reply.txt");
 
         ClearString(buffer, sizeof(buffer));
@@ -286,7 +288,7 @@ int main(int argc, char *argv[])
     		if(yn == 'y' || yn == 's')
         {
           // Limpa a tela
-          system("tput reset");
+          system("clear");
 
           PrintSpider(spider, NULL, 0);
           printf("\nDigite 'enter' para continuar...");
@@ -296,7 +298,7 @@ int main(int argc, char *argv[])
         DeleteSpiderList(&spider);
 
         // Limpa a tela
-        system("tput reset");
+        system("clear");
 
 				break;
 			case '3':
@@ -324,7 +326,7 @@ int main(int argc, char *argv[])
     system("rm -rf ./files/proxy");
 
     // Limpa a tela
-    system("tput reset");
+    system("clear");
 	 }
 
   return 0;

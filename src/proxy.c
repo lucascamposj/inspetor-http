@@ -97,12 +97,11 @@ Argumentos:
 
 void get_server_response(char *hostname, char *url)
 {
-  int sock,port = 80, n;
+  int sock,port = 80, n, msgSize, firstPack = 1;
 	char http_request[300];
 	char path[500];
 	char name[500];
-	char buffer[5000];
-  char isEnd[50];
+	char buffer[5000], msgLenth[100], *tmpBuffer;
 	FILE* file;
 
   system("mkdir -p ./tmp");
@@ -156,15 +155,34 @@ void get_server_response(char *hostname, char *url)
 	while(1){
 		bzero(buffer,sizeof(buffer));
   	n = read(sock,buffer,sizeof(buffer) - 1);
+
+    if (firstPack == 1)
+    {
+      GetFromText("Content-Length:", 1, '\r', buffer, sizeof(buffer), msgLenth, sizeof(msgLenth));
+
+      if (msgLenth != '\0')
+        msgSize = atoi(msgLenth);
+
+      tmpBuffer = strstr(buffer, "\r\n\r\n");
+
+      if (tmpBuffer != NULL)
+      {
+        tmpBuffer += 4;
+        n = n - (int)(tmpBuffer - buffer);
+      }
+      firstPack = 0;
+    }
+
 		fprintf(stderr, ".");
   	if(n < 0)
     	error("Erro ao ler no socket");
-		if(n > 0){
+		if(n > 0)
+    {
 	  	// printf("%s",buffer);
 			fprintf(file, "%s", buffer);
-      GetFromText("</html>", 0, '>', buffer, 5000, isEnd, 50);
+      msgSize = msgSize - n;
 
-      if (isEnd[0] != '\0')
+      if (msgSize == 0)
         break;
 		}
 		if(n == 0) break;
@@ -183,8 +201,9 @@ servidor de destino, obtem a reposta e armazena em files/reply.txt
 int send_request(){
 	int ok, n, sock, numbytes;
 	FILE *frequest, *freply;
-	char *request, buffer[5000], hostname[500], isEnd[50];
-	int port = 80;
+	char *request, buffer[5000], hostname[500], *tmpBuffer;
+	int port = 80, msgSize, firstPack = 1;
+  char msgLenth[100];
 	struct sockaddr_in server_address;
 	struct hostent *server;
 
@@ -195,7 +214,7 @@ int send_request(){
 	if((frequest = fopen("./files/proxy/request.txt", "r")) == NULL)
 		error("Erro ao criar arquivos files/proxy/request.txt");
 
-	if((freply = fopen("./files/proxy/reply.txt", "w")) == NULL)
+	if((freply = fopen("./files/proxy/reply.txt", "wb")) == NULL)
 		error("Erro ao criar arquivos files/proxy/reply.txt");
 
 	// captura o tamanho do arquivo em bytes
@@ -238,25 +257,46 @@ int send_request(){
 	if (write(sock,request,strlen(request)) < 0)
 		error("Erro ao escrever no socket");
 
+  ClearString(msgLenth, sizeof(msgLenth));
+
 	// Armazena toda a resposta do servidor em files/reply.txt
-	while(1){
+	while(1)
+  {
 		bzero(buffer,sizeof(buffer));
 		n = read(sock,buffer,sizeof(buffer) - 1);
-		fprintf(stderr, ".");
+
+    if (firstPack == 1)
+    {
+      GetFromText("Content-Length:", 1, '\r', buffer, sizeof(buffer), msgLenth, sizeof(msgLenth));
+
+      if (msgLenth != '\0')
+        msgSize = atoi(msgLenth);
+
+      tmpBuffer = strstr(buffer, "\r\n\r\n");
+
+      if (tmpBuffer != NULL)
+      {
+        tmpBuffer += 4;
+        n = n - (int)(tmpBuffer - buffer);
+      }
+      firstPack = 0;
+    }
+
 		if(n < 0)
 			error("Erro ao ler no socket");
 		if(n > 0){
 			printf("%s",buffer);
 			fprintf(freply, "%s", buffer);
+      msgSize = msgSize - n;
 
-      GetFromText("</html>", 0, '>', buffer, 5000, isEnd, 50);
-
-      if (isEnd[0] != '\0')
+      if (msgSize == 0)
         break;
 		}
-		if(n == 0) break;
+		if(n == 0)
+      break;
 	}
 
+  close(sock);
 	fclose(freply);
 	free(request);
 	return ok;
