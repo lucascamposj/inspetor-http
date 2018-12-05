@@ -145,13 +145,16 @@ int main(int argc, char *argv[])
     // Limpa a tela
     system("tput reset");
 
+    // Criando o diretório
+    system("mkdir -p ./files/proxy");
+
 		bzero(request,sizeof(request));
 
     n = read(newsock, request, sizeof(request));
     if(n < 0) error("Erro ao ler o socket");
 
-		if((frequest = fopen("files/request.txt", "w")) == NULL)
-			error("Erro ao criar arquivos files/request.txt");
+		if((frequest = fopen("files/proxy/request.txt", "w")) == NULL)
+			error("Erro ao criar arquivos files/proxy/request.txt");
 		printf("Request do browser:\n\n");
 		printf("%s",request);
 		fprintf(frequest, "%s", request);
@@ -173,7 +176,7 @@ int main(int argc, char *argv[])
     }
 
     // Drop no request do site 'http://ocsp.digicert.com/'
-    if (strcmp(link, "http://ocsp.digicert.com/") == 0)
+    if (strstr(link, "ocsp.") != NULL)
     {
       // Limpa a tela
       system("tput reset");
@@ -213,7 +216,7 @@ int main(int argc, char *argv[])
 		getchar();
 		yn = tolower(yn);
 		if(yn == 'y' || yn == 's'){
-			system("nano files/request.txt");
+			system("nano files/proxy/request.txt");
 		}
 
 		choice = menu();
@@ -229,10 +232,10 @@ int main(int argc, char *argv[])
 				getchar();
 				yn = tolower(yn);
 				if(yn == 'y' || yn == 's'){
-					system("nano files/reply.txt");
+					system("nano files/proxy/reply.txt");
 				}
 
-				if((freply = fopen("files/reply.txt", "r")) == NULL)
+				if((freply = fopen("files/proxy/reply.txt", "r")) == NULL)
 					error("Erro ao criar arquivos files/reply.txt");
 
         ClearString(buffer, sizeof(buffer));
@@ -284,7 +287,7 @@ int main(int argc, char *argv[])
         {
           // Limpa a tela
           system("tput reset");
-          
+
           PrintSpider(spider, NULL, 0);
           printf("\nDigite 'enter' para continuar...");
           getchar();
@@ -316,6 +319,9 @@ int main(int argc, char *argv[])
 		}
 
     close(newsock);
+
+    // Apaga o ./files/proxy
+    system("rm -rf ./files/proxy");
 
     // Limpa a tela
     system("tput reset");

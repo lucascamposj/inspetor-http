@@ -105,6 +105,7 @@ void get_server_response(char *hostname, char *url)
   char isEnd[50];
 	FILE* file;
 
+  system("mkdir -p ./tmp");
 	file = fopen("./tmp/server_response.txt","w");
 	if(file == NULL)
 		error("Erro ao abrir o arquivo");
@@ -187,12 +188,15 @@ int send_request(){
 	struct sockaddr_in server_address;
 	struct hostent *server;
 
-	//criando arquivos
-	if((frequest = fopen("files/request.txt", "r")) == NULL)
-		error("Erro ao criar arquivos files/request.txt");
+  // Criando o diretório
+  system("mkdir -p ./files/proxy");
 
-	if((freply = fopen("files/reply.txt", "w")) == NULL)
-		error("Erro ao criar arquivos files/reply.txt");
+	// criando arquivos
+	if((frequest = fopen("./files/proxy/request.txt", "r")) == NULL)
+		error("Erro ao criar arquivos files/proxy/request.txt");
+
+	if((freply = fopen("./files/proxy/reply.txt", "w")) == NULL)
+		error("Erro ao criar arquivos files/proxy/reply.txt");
 
 	// captura o tamanho do arquivo em bytes
 	fseek(frequest, 0L, SEEK_END);

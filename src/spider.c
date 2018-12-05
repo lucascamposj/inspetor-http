@@ -73,7 +73,6 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead,
       {
         AddVisitedList(&visitedListHead, newLink);  // Adiciona link nos visitados
         RemoveTmp();
-        CreateTmp();
 
   			if(isDump == 1)
   				printf("\nDownloading: %s\n", newLink);
@@ -185,6 +184,7 @@ void Spider(char *link, char *hostname, int isDump, spiderList **spiderListHead,
       strcpy(newLink, linkToVisit->Link);
   }
 
+  RemoveTmp();
   DeleteVisitedList(&visitedListHead);
 }
 
